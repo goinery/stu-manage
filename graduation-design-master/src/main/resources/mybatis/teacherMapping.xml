@@ -33,12 +33,37 @@
     </select>
 
     <select id="selectTeacherStatisList"  resultType="com.kzl.entity.TeacherStatis">
-        SELECT count(s.studentNumber), cu.name name
+        SELECT count(s.studentNumber) as count, cu.name name
         FROM student_course_rel sc
                  LEFT JOIN course c ON c.id=sc.courseId
                  LEFT JOIN student s ON s.id = sc.studentId
-                 LEFT JOIN college cu ON cu.id = c. collegeId
-        WHERE c.teacherId=#{teacherId}  GROUP BY name;
+                 LEFT JOIN college cu ON cu.id = c.collegeId
+        WHERE c.teacherId=#{teacherId}  GROUP BY name
  </select>
+
+    <!-- 根据ID查询教师信息 -->
+    <select id="selectTeacherById" resultType="com.kzl.entity.Teacher">
+        SELECT t.id, t.loginName, t.username, t.phone, t.email, t.collegeId, t.createDate, t.roleId, c.name collegeName
+        FROM teacher t
+        LEFT JOIN college c ON t.collegeId = c.id
+        WHERE t.id = #{id}
+    </select>
+
+    <!-- 修改教师基本信息 -->
+    <update id="updateTeacherProfile" parameterType="com.kzl.entity.Teacher">
+        UPDATE teacher SET phone = #{phone}, email = #{email}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 验证教师密码 -->
+    <select id="verifyTeacherPassword" parameterType="com.kzl.entity.Teacher" resultType="com.kzl.entity.Teacher">
+        SELECT id, loginName, username FROM teacher
+        WHERE loginName = #{loginName} AND password = #{password} AND state = '1'
+    </select>
+
+    <!-- 修改教师密码 -->
+    <update id="updateTeacherPassword">
+        UPDATE teacher SET password = #{newPassword} WHERE id = #{id}
+    </update>
  
 </mapper>

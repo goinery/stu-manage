@@ -31,4 +31,13 @@ public class Teacher {
         this.roleId = roleId;
         this.roleName = roleName;
     }
+
+    public Teacher(String id, String loginName, String username, String roleId, String roleName, String collegeId) {
+        this.id = id;
+        this.loginName = loginName;
+        this.username = username;
+        this.roleId = roleId;
+        this.roleName = roleName;
+        this.collegeId = collegeId;
+    }
 }

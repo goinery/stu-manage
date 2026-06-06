@@ -89,4 +89,24 @@ public class TeacherServiceImpl implements TeacherService {
         List<TeacherStatis> teacherStatiss = teacherMapper.selectTeacherStatisList(teacherId);
         return teacherStatiss;
  }
+
+    @Override
+    public Teacher queryTeacherById(String id) {
+        return teacherMapper.selectTeacherById(id);
+    }
+
+    @Override
+    public boolean updateTeacherProfile(Teacher teacher) {
+        return teacherMapper.updateTeacherProfile(teacher);
+    }
+
+    @Override
+    public Teacher verifyTeacherPassword(Teacher teacher) {
+        return teacherMapper.verifyTeacherPassword(teacher);
+    }
+
+    @Override
+    public boolean updateTeacherPassword(String id, String newPassword) {
+        return teacherMapper.updateTeacherPassword(id, newPassword);
+    }
 }

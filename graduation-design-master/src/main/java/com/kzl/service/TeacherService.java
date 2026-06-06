@@ -28,4 +28,16 @@ public interface TeacherService {
     List<CourseAcademicYear> selectCourseYearList(String courseAcademicYearId);
 
     List<TeacherStatis> selectTeacherStatisList(String teacherId);
+
+    //根据ID查询教师信息
+    Teacher queryTeacherById(String id);
+
+    //修改教师基本信息
+    boolean updateTeacherProfile(Teacher teacher);
+
+    //验证教师密码
+    Teacher verifyTeacherPassword(Teacher teacher);
+
+    //修改教师密码
+    boolean updateTeacherPassword(String id, String newPassword);
 }

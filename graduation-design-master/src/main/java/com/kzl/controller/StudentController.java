@@ -31,8 +31,26 @@ public class StudentController {
         ModelAndView modelAndView = new ModelAndView("index");
         modelAndView.addObject("information",information);
         modelAndView.addObject("userType","3");
+        //查询选课统计数据
+        try {
+            List<Course> courses = studentService.selectCourseList(user.getId());
+            double creditsCount = 0;
+            for(Course course:courses){
+                creditsCount += course.getCredits();
+            }
+            modelAndView.addObject("courseCount", courses.size());
+            modelAndView.addObject("creditsCount", creditsCount);
+            CourseAcademicYear courseAcademicYear = studentService.getCourseAcademicYear();
+            if(courseAcademicYear != null){
+                modelAndView.addObject("academicYear", courseAcademicYear.getAcademicYearName());
+            }
+        } catch (Exception e) {
+            modelAndView.addObject("courseCount", 0);
+            modelAndView.addObject("creditsCount", 0);
+        }
         request.getSession().setAttribute("user",user);
         request.getSession().setAttribute("menuList",menuList);
+        request.getSession().setAttribute("userType","3");
         return modelAndView;
     }
 

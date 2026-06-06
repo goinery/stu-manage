@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns="http://www.w3.org/1999/xhtml"
+>
+<head>
+    <meta charset="UTF-8"/>
+    <title>基本信息</title>
+    <link href="../../static/css/index.css" type="text/css" rel="stylesheet"/>
+    <link rel="stylesheet" href="../../static/layui/css/layui.css"/>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <!--头部导航栏-->
+    <div id="head" th:include="common/header :: common_head(user=${session.user})"></div>
+    <!--左边菜单栏-->
+    <div id="left_column" th:include="common/left_column :: left_column(menuList=${session.menuList})"></div>
+    <!-- 内容主体区域 -->
+    <div class="layui-body">
+        <div style="padding: 15px;">
+            <div class="index_cloum">
+                <blockquote class="layui-elem-quote">
+                    基本信息
+                </blockquote>
+                <div class="layui-card">
+                    <div class="layui-card-header">个人资料</div>
+                    <div class="layui-card-body" style="padding: 20px;">
+                        <form class="layui-form" action="" lay-filter="profileForm">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">登录名</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="loginName" th:value="${teacher.loginName}" class="layui-input" disabled>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">姓名</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="username" th:value="${teacher.username}" class="layui-input" disabled>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">所属学院</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="collegeName" th:value="${teacher.collegeName}" class="layui-input" disabled>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">手机号</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="phone" id="phone" th:value="${teacher.phone}" lay-verify="required|phone" lay-reqtext="请输入正确的手机号" placeholder="请输入手机号" autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">邮箱</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="email" id="email" th:value="${teacher.email}" lay-verify="required|email" lay-reqtext="请输入正确的邮箱" placeholder="请输入邮箱" autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">注册时间</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="createDate" th:value="${#dates.format(teacher.createDate, 'yyyy-MM-dd HH:mm:ss')}" class="layui-input" disabled>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <div class="layui-input-block">
+                                    <button type="button" class="layui-btn" id="saveProfileBtn">保存修改</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script src="../../static/layui/layui.all.js"></script>
+<script>
+    layui.use(['form', 'layer'], function(){
+        var form = layui.form;
+        var layer = layui.layer;
+        var $ = layui.jquery;
+
+        $('#saveProfileBtn').on('click', function(){
+            var phone = $('#phone').val();
+            var email = $('#email').val();
+
+            if(!phone || phone === ''){
+                layer.msg('手机号不能为空');
+                return;
+            }
+            if(!/^1\d{10}$/.test(phone)){
+                layer.msg('请输入正确的手机号');
+                return;
+            }
+            if(!email || email === ''){
+                layer.msg('邮箱不能为空');
+                return;
+            }
+            if(!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)){
+                layer.msg('请输入正确的邮箱地址');
+                return;
+            }
+
+            var data = JSON.stringify({
+                'phone': phone,
+                'email': email
+            });
+
+            $.ajax({
+                url: '/user/updateTeacherProfile',
+                method: 'post',
+                data: data,
+                contentType: "application/json;charset=utf-8",
+                dataType: 'json',
+                success: function(res){
+                    if(res.code === 200){
+                        layer.msg('修改成功', {icon: 1});
+                    } else {
+                        layer.msg(res.message || '修改失败', {icon: 2});
+                    }
+                },
+                error: function(){
+                    layer.msg('服务器连接失败，请稍后重试', {icon: 2});
+                }
+            });
+        });
+    });
+</script>
+</html>

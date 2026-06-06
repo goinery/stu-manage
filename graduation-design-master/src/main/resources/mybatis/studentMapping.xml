@@ -88,4 +88,34 @@
         UPDATE course SET selected = selected + #{useNumber}
         WHERE id=#{id}
     </update>
+
+    <!-- 根据ID查询学生信息 -->
+    <select id="selectStudentById" resultType="com.kzl.entity.Student">
+        SELECT s.id, s.studentNumber, s.username, s.phone, s.email, s.collegeId, s.createDate, s.roleId, c.name collegeName
+        FROM student s
+        LEFT JOIN college c ON s.collegeId = c.id
+        WHERE s.id = #{id}
+    </select>
+
+    <!-- 修改学生基本信息 -->
+    <update id="updateStudentProfile" parameterType="com.kzl.entity.Student">
+        UPDATE student SET phone = #{phone}, email = #{email}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 验证学生密码 -->
+    <select id="verifyStudentPassword" parameterType="com.kzl.entity.Student" resultType="com.kzl.entity.Student">
+        SELECT id, studentNumber, username FROM student
+        WHERE studentNumber = #{studentNumber} AND password = #{password} AND state = '1'
+    </select>
+
+    <!-- 修改学生密码 -->
+    <update id="updateStudentPassword">
+        UPDATE student SET password = #{newPassword} WHERE id = #{id}
+    </update>
+
+    <!-- 数据库连接检测 -->
+    <select id="checkConnection" resultType="java.lang.Integer">
+        SELECT 1
+    </select>
 </mapper>

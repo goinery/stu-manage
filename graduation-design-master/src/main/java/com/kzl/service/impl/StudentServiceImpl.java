@@ -109,4 +109,34 @@ public class StudentServiceImpl implements StudentService {
         return data;
     }
 
+    @Override
+    public Student queryStudentById(String id) {
+        return studentMapper.selectStudentById(id);
+    }
+
+    @Override
+    public boolean updateStudentProfile(Student student) {
+        return studentMapper.updateStudentProfile(student);
+    }
+
+    @Override
+    public Student verifyStudentPassword(Student student) {
+        return studentMapper.verifyStudentPassword(student);
+    }
+
+    @Override
+    public boolean updateStudentPassword(String id, String newPassword) {
+        return studentMapper.updateStudentPassword(id, newPassword);
+    }
+
+    @Override
+    public boolean checkDatabaseConnection() {
+        try {
+            studentMapper.checkConnection();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
 }

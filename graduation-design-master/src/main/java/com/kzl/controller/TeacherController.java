@@ -27,15 +27,26 @@ public class TeacherController {
 
     //登录获取数据
     @RequestMapping("getLoginData")
-    public ModelAndView getLoginData(String id, String loginName, String username, String roleId, String roleName, HttpServletRequest request){
-        Teacher user = new Teacher(id,loginName,username,roleId,roleName);
+    public ModelAndView getLoginData(String id, String loginName, String username, String roleId, String roleName, String collegeId, String collegeName, HttpServletRequest request){
+        Teacher user = new Teacher(id,loginName,username,roleId,roleName,collegeId);
+        user.setCollegeName(collegeName);
         List<Menu> menuList = teacherService.queryUserRoleMenu(user.getRoleId());
         Information information = teacherService.queryInformation(user.getRoleId());
         ModelAndView modelAndView = new ModelAndView("index");
         modelAndView.addObject("information",information);
         modelAndView.addObject("userType","2");
+        modelAndView.addObject("collegeName",collegeName);
+        try {
+            CourseAcademicYear courseAcademicYear = studentService.getCourseAcademicYear();
+            if(courseAcademicYear != null){
+                modelAndView.addObject("academicYear", courseAcademicYear.getAcademicYearName());
+            }
+        } catch (Exception e) {
+            // academicYear will be null, template handles it
+        }
         request.getSession().setAttribute("user",user);
         request.getSession().setAttribute("menuList",menuList);
+        request.getSession().setAttribute("userType","2");
         return modelAndView;
     }
 
