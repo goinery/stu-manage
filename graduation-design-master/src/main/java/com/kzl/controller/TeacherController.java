@@ -126,10 +126,26 @@ public class TeacherController {
 
 
     //统计信息
+    // @RequestMapping("statisticalInfo")
+    // public String statisticalInfo(HttpServletRequest request){
+    //     boolean state = judgeUserLoginState(request);
+    //     return state?"teacher/statisticalInfo":"redirect:/";
+    // }
+
     @RequestMapping("statisticalInfo")
-    public String statisticalInfo(HttpServletRequest request){
+public ModelAndView statisticalInfo(HttpServletRequest request){
         boolean state = judgeUserLoginState(request);
-        return state?"teacher/statisticalInfo":"redirect:/";
+        ModelAndView modelAndView = new ModelAndView();
+        if (state ==  true)
+        {
+            Teacher user = (Teacher) request.getSession().getAttribute("user");
+            List<TeacherStatis> CoutStudent_collage  = teacherService.selectTeacherStatisList(user.getId());
+            modelAndView.setViewName("teacher/statisticalInfo");
+            modelAndView.addObject("TeacherStatis",CoutStudent_collage);
+        } else {
+            modelAndView.setViewName("redirect:/");
+        }
+        return  modelAndView;
     }
 
 
