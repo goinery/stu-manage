@@ -298,7 +298,7 @@ public class StudentServiceImpl implements StudentService {
             for(Map stat : rawStats){
                 String date1 = stat.get("classDate1") != null ? stat.get("classDate1").toString() : "";
                 String date2 = stat.get("classDate2") != null ? stat.get("classDate2").toString() : "";
-                if(isTimeConflict(date1, date2)){
+                if(isTimeOverlap(date1, date2)){
                     Map<String, Object> conflict = new HashMap<>();
                     conflict.put("courseName1", stat.get("courseName1"));
                     conflict.put("courseName2", stat.get("courseName2"));

@@ -19,11 +19,6 @@
         AND studentId=#{studentId}
     </select>
 
-    <insert id="insertStudentCourseRel" parameterType="com.kzl.entity.StudentCourseRel">
-        INSERT INTO student_course_rel(id,studentId,courseId,teacherId,isQualified,creditsRemark,state)
-        VALUES(#{id},#{studentId},#{courseId},#{teacherId},#{isQualified},#{creditsRemark},#{state})
-    </insert>
-
     <delete id="deleteStudentCourseRel" parameterType="com.kzl.entity.StudentCourseRel">
         DELETE FROM student_course_rel WHERE studentId = #{studentId} AND courseId = #{courseId}
     </delete>
