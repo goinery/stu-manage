@@ -118,4 +118,155 @@
     <select id="checkConnection" resultType="java.lang.Integer">
         SELECT 1
     </select>
+
+    <!-- 查询推荐选课列表（同学院同学年，排除体育课程） -->
+    <select id="selectRecommendCourseList" resultType="com.kzl.entity.Course">
+        SELECT s.id,s.courseName,s.collegeId,s.startDate,s.endDate,s.credits,s.optional,s.primaryAmount,s.selected,s.remark,s.academicYear,s.classPlace,s.classDate,
+               c.name collegeName,t.username teacherName,
+               CASE WHEN sc.id IS NOT NULL THEN '1' ELSE '0' END as type
+        FROM course s
+        LEFT JOIN college c ON s.collegeId = c.id
+        LEFT JOIN teacher t ON t.id=s.teacherId
+        LEFT JOIN student_course_rel sc ON sc.courseId = s.id AND sc.studentId = #{studentId}
+        WHERE s.collegeId = #{collegeId}
+        AND s.academicYear = #{academicYear}
+        AND s.courseName NOT LIKE '%体育%'
+        ORDER BY s.courseName
+    </select>
+
+    <!-- 查询方案内选课列表（同专业所有学期课程，排除已选） -->
+    <select id="selectPlanCourseList" resultType="com.kzl.entity.Course">
+        SELECT s.id,s.courseName,s.collegeId,s.startDate,s.endDate,s.credits,s.optional,s.primaryAmount,s.selected,s.remark,s.academicYear,s.classPlace,s.classDate,
+               c.name collegeName,t.username teacherName,
+               CASE WHEN sc.id IS NOT NULL THEN '1' ELSE '0' END as type
+        FROM course s
+        LEFT JOIN college c ON s.collegeId = c.id
+        LEFT JOIN teacher t ON t.id=s.teacherId
+        LEFT JOIN student_course_rel sc ON sc.courseId = s.id AND sc.studentId = #{studentId}
+        WHERE s.collegeId = #{collegeId}
+        AND s.academicYear != #{academicYear}
+        ORDER BY s.academicYear, s.courseName
+    </select>
+
+    <!-- 查询方案外选课列表（其他专业课程） -->
+    <select id="selectOutsideCourseList" resultType="com.kzl.entity.Course">
+        SELECT s.id,s.courseName,s.collegeId,s.startDate,s.endDate,s.credits,s.optional,s.primaryAmount,s.selected,s.remark,s.academicYear,s.classPlace,s.classDate,
+               c.name collegeName,t.username teacherName,
+               CASE WHEN sc.id IS NOT NULL THEN '1' ELSE '0' END as type
+        FROM course s
+        LEFT JOIN college c ON s.collegeId = c.id
+        LEFT JOIN teacher t ON t.id=s.teacherId
+        LEFT JOIN student_course_rel sc ON sc.courseId = s.id AND sc.studentId = #{studentId}
+        WHERE s.collegeId != #{collegeId}
+        AND s.academicYear = #{academicYear}
+        ORDER BY c.name, s.courseName
+    </select>
+
+    <!-- 查询当前有效的选课阶段 -->
+    <select id="selectActiveSelectionStage" resultType="com.kzl.entity.SelectionStage">
+        SELECT id, academicYear, stageName, stageOrder, startDate, endDate,
+               allowRecommend, allowPlan, allowOutside, state
+        FROM selection_stage
+        WHERE academicYear = #{academicYear}
+        AND state = '1'
+        AND startDate &lt;= CURRENT_TIMESTAMP
+        AND endDate &gt;= CURRENT_TIMESTAMP
+        ORDER BY stageOrder
+        LIMIT 1
+    </select>
+
+    <!-- 查询学生已选课程的上课时间（用于冲突校验） -->
+    <select id="selectStudentCourseTimeSlots" resultType="java.lang.String">
+        SELECT c.classDate
+        FROM student_course_rel sc
+        LEFT JOIN course c ON c.id = sc.courseId
+        WHERE sc.studentId = #{studentId}
+        AND sc.state = '0'
+        AND c.classDate IS NOT NULL
+        AND c.classDate != ''
+    </select>
+
+    <!-- 确保选课阶段表存在 -->
+    <update id="ensureSelectionStageTable">
+        CREATE TABLE IF NOT EXISTS selection_stage (
+            id varchar(32) PRIMARY KEY,
+            academicYear varchar(20) NOT NULL,
+            stageName varchar(64) NOT NULL,
+            stageOrder INTEGER NOT NULL,
+            startDate TIMESTAMP NOT NULL,
+            endDate TIMESTAMP NOT NULL,
+            allowRecommend varchar(1) DEFAULT '1',
+            allowPlan varchar(1) DEFAULT '0',
+            allowOutside varchar(1) DEFAULT '0',
+            state varchar(1) DEFAULT '1'
+        )
+    </update>
+
+    <!-- 插入选课关联时包含选课类型 -->
+    <insert id="insertStudentCourseRel" parameterType="com.kzl.entity.StudentCourseRel">
+        INSERT INTO student_course_rel(id,studentId,courseId,teacherId,isQualified,creditsRemark,state,selectionType)
+        VALUES(#{id},#{studentId},#{courseId},#{teacherId},#{isQualified},#{creditsRemark},#{state},#{selectionType})
+    </insert>
+
+    <!-- 按选课类型统计 -->
+    <select id="selectCourseCountByType" resultType="java.util.HashMap">
+        SELECT
+            CASE
+                WHEN sc.selectionType = 'recommend' THEN '推荐选课'
+                WHEN sc.selectionType = 'plan' THEN '方案内选课'
+                WHEN sc.selectionType = 'outside' THEN '方案外选课'
+                ELSE '未分类'
+            END as typeName,
+            COUNT(1) as courseNum,
+            CASE WHEN SUM(c.credits) IS NULL THEN 0 ELSE SUM(c.credits) END as creditsNum
+        FROM student_course_rel sc
+        LEFT JOIN course c ON sc.courseId = c.id
+        WHERE sc.studentId = #{studentId}
+        GROUP BY sc.selectionType
+    </select>
+
+    <!-- 按专业统计选课 -->
+    <select id="selectCourseCountByCollege" resultType="java.util.HashMap">
+        SELECT
+            co.name as collegeName,
+            COUNT(1) as courseNum,
+            CASE WHEN SUM(c.credits) IS NULL THEN 0 ELSE SUM(c.credits) END as creditsNum
+        FROM student_course_rel sc
+        LEFT JOIN course c ON sc.courseId = c.id
+        LEFT JOIN college co ON c.collegeId = co.id
+        WHERE sc.studentId = #{studentId}
+        GROUP BY co.name
+    </select>
+
+    <!-- 时间冲突检测统计 -->
+    <select id="selectTimeConflictStats" resultType="java.util.HashMap">
+        SELECT
+            c1.courseName as courseName1,
+            c2.courseName as courseName2,
+            c1.classDate as classDate1,
+            c2.classDate as classDate2
+        FROM student_course_rel sc1
+        LEFT JOIN student_course_rel sc2 ON sc1.studentId = sc2.studentId AND sc1.courseId != sc2.courseId
+        LEFT JOIN course c1 ON sc1.courseId = c1.id
+        LEFT JOIN course c2 ON sc2.courseId = c2.id
+        WHERE sc1.studentId = #{studentId}
+        AND sc1.courseId &lt; sc2.courseId
+        AND c1.classDate IS NOT NULL AND c1.classDate != ''
+        AND c2.classDate IS NOT NULL AND c2.classDate != ''
+    </select>
+
+    <!-- 选课总体统计 -->
+    <select id="selectSelectionOverview" resultType="java.util.HashMap">
+        SELECT
+            COUNT(1) as totalCourses,
+            CASE WHEN SUM(c.credits) IS NULL THEN 0 ELSE SUM(c.credits) END as totalCredits,
+            SUM(CASE WHEN sc.state = '1' THEN 1 ELSE 0 END) as completedCourses,
+            SUM(CASE WHEN sc.state = '0' THEN 1 ELSE 0 END) as ongoingCourses,
+            SUM(CASE WHEN sc.selectionType = 'recommend' OR sc.selectionType IS NULL THEN 1 ELSE 0 END) as recommendCount,
+            SUM(CASE WHEN sc.selectionType = 'plan' THEN 1 ELSE 0 END) as planCount,
+            SUM(CASE WHEN sc.selectionType = 'outside' THEN 1 ELSE 0 END) as outsideCount
+        FROM student_course_rel sc
+        LEFT JOIN course c ON sc.courseId = c.id
+        WHERE sc.studentId = #{studentId}
+    </select>
 </mapper>

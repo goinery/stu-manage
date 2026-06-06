@@ -1,11 +1,25 @@
 <!DOCTYPE html>
-<html lang="zh" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="zh" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+      xmlns="http://www.w3.org/1999/xhtml"
+>
 <head>
     <meta charset="UTF-8"/>
     <title>选课统计</title>
     <link href="../../static/css/index.css" type="text/css" rel="stylesheet"/>
     <link href="../../static/css/course.css" type="text/css" rel="stylesheet"/>
     <link rel="stylesheet" href="../../static/layui/css/layui.css"/>
+    <style>
+        .stat-card{display:inline-block;width:22%;margin:1%;text-align:center;background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.1);padding:15px 0;vertical-align:top;}
+        .stat-card .num{font-size:32px;font-weight:bold;margin:8px 0;}
+        .stat-card .label{font-size:14px;color:#666;}
+        .chart-box{background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.1);padding:15px;margin:10px 1%;display:inline-block;vertical-align:top;}
+        .chart-left{width:48%;}
+        .chart-right{width:48%;}
+        .conflict-box{background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.1);padding:15px;margin:10px 1%;width:98%;}
+        .conflict-item{padding:10px;margin:5px 0;border-left:4px solid #FF5722;background:#FFF8F0;border-radius:4px;}
+        .no-conflict{padding:20px;text-align:center;color:#5FB878;font-size:16px;}
+    </style>
 </head>
 <body class="layui-layout-body">
 <div class="layui-layout layui-layout-admin">
@@ -21,45 +35,225 @@
                     选课统计
                 </blockquote>
 
-                <blockquote class="layui-elem-quote course-column count-box">
-                    <div>已完成课程统计</div>
-                    <hr>
-                    <div class="count-tip">当前已选课程门数:<span class="count_num">[[${complete['courseNum']}]]</span></div>
-                    <div class="count-tip">当前已选学分:<span class="count_num">[[${complete['creditsNum']}]]</span>分</div>
-                    <div class="clear"></div>
-                </blockquote>
+                <!-- 原有统计卡片 -->
+                <div style="margin-bottom:15px;">
+                    <blockquote class="layui-elem-quote course-column count-box">
+                        <div>已完成课程统计</div>
+                        <hr>
+                        <div class="count-tip">当前已选课程门数:<span class="count_num">[[${complete['courseNum']}]]</span></div>
+                        <div class="count-tip">当前已选学分:<span class="count_num">[[${complete['creditsNum']}]]</span>分</div>
+                        <div class="clear"></div>
+                    </blockquote>
 
-                <blockquote class="layui-elem-quote course-column count-box">
-                    <div>正在进行课程统计</div>
-                    <hr>
-                    <div class="count-tip">当前已选课程门数:<span class="count_num">[[${unfinished['courseNum']}]]</span></div>
-                    <div class="count-tip">当前已选学分:<span class="count_num">[[${unfinished['creditsNum']}]]</span>分</div>
-                    <div class="clear"></div>
-                </blockquote>
+                    <blockquote class="layui-elem-quote course-column count-box">
+                        <div>正在进行课程统计</div>
+                        <hr>
+                        <div class="count-tip">当前已选课程门数:<span class="count_num">[[${unfinished['courseNum']}]]</span></div>
+                        <div class="count-tip">当前已选学分:<span class="count_num">[[${unfinished['creditsNum']}]]</span>分</div>
+                        <div class="clear"></div>
+                    </blockquote>
 
-                <blockquote class="layui-elem-quote course-column count-box">
-                    <div>已选课程统计</div>
-                    <hr>
-                    <div class="count-tip">当前已选课程门数:<span class="count_num">[[${selected['courseNum']}]]</span></div>
-                    <div class="count-tip">当前已选学分:<span class="count_num">[[${selected['creditsNum']}]]</span>分</div>
-                    <div class="clear"></div>
+                    <blockquote class="layui-elem-quote course-column count-box">
+                        <div>已选课程统计</div>
+                        <hr>
+                        <div class="count-tip">当前已选课程门数:<span class="count_num">[[${selected['courseNum']}]]</span></div>
+                        <div class="count-tip">当前已选学分:<span class="count_num">[[${selected['creditsNum']}]]</span>分</div>
+                        <div class="clear"></div>
+                    </blockquote>
+                </div>
+
+                <!-- 选课类型统计卡片 -->
+                <blockquote class="layui-elem-quote" style="margin-top:15px;">
+                    按选课类型统计
                 </blockquote>
+                <div id="typeStats" style="margin-bottom:15px;text-align:center;">
+                    <div class="stat-card" style="border-top:4px solid #1E9FFF;">
+                        <div class="label">推荐选课</div>
+                        <div class="num" style="color:#1E9FFF;" id="recommendNum">0</div>
+                        <div class="label">门</div>
+                    </div>
+                    <div class="stat-card" style="border-top:4px solid #FFB800;">
+                        <div class="label">方案内选课</div>
+                        <div class="num" style="color:#FFB800;" id="planNum">0</div>
+                        <div class="label">门</div>
+                    </div>
+                    <div class="stat-card" style="border-top:4px solid #FF5722;">
+                        <div class="label">方案外选课</div>
+                        <div class="num" style="color:#FF5722;" id="outsideNum">0</div>
+                        <div class="label">门</div>
+                    </div>
+                    <div class="stat-card" style="border-top:4px solid #5FB878;">
+                        <div class="label">总选课数</div>
+                        <div class="num" style="color:#5FB878;" id="totalNum">0</div>
+                        <div class="label">门</div>
+                    </div>
+                </div>
+
+                <!-- 可视化图表区域 -->
+                <div style="margin:10px 0;">
+                    <div class="chart-box chart-left">
+                        <h4 style="text-align:center;margin-bottom:10px;">选课类型分布</h4>
+                        <canvas id="typeChart" width="400" height="280"></canvas>
+                    </div>
+                    <div class="chart-box chart-right">
+                        <h4 style="text-align:center;margin-bottom:10px;">学院选课分布</h4>
+                        <canvas id="collegeChart" width="400" height="280"></canvas>
+                    </div>
+                </div>
+
+                <!-- 时间冲突检测 -->
+                <div class="conflict-box">
+                    <h4 style="margin-bottom:10px;color:#333;">时间冲突检测</h4>
+                    <div id="conflictArea">
+                        正在检测中...
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 </div>
 </body>
 <script src="../../static/layui/layui.all.js"/>
-<script>
-    layui.use(['tree', 'util','element'], function(){
-        var layer = layui.layer
-            ,element = layui.element;
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script th:inline="javascript">
+    layui.use(['layer'], function(){
+        var layer = layui.layer,
+            $ = layui.jquery;
 
-        //监听导航点击
-        element.on('nav(demo)', function(elem){
-            console.log(elem)
-            // layer.msg(elem.text());
+        //获取统计数据
+        $.ajax({
+            url: '/student/statisticalData',
+            method: 'get',
+            dataType: 'json',
+            success: function(res){
+                if(res.code === 200 && res.data){
+                    var data = res.data;
+
+                    //渲染类型统计卡片
+                    var byType = data.byType || [];
+                    var recommendNum = 0, planNum = 0, outsideNum = 0;
+                    for(var i = 0; i < byType.length; i++){
+                        var typeName = byType[i].typeName;
+                        var courseNum = parseInt(byType[i].courseNum) || 0;
+                        if(typeName === '推荐选课') recommendNum = courseNum;
+                        else if(typeName === '方案内选课') planNum = courseNum;
+                        else if(typeName === '方案外选课') outsideNum = courseNum;
+                    }
+                    $('#recommendNum').text(recommendNum);
+                    $('#planNum').text(planNum);
+                    $('#outsideNum').text(outsideNum);
+                    $('#totalNum').text(recommendNum + planNum + outsideNum);
+
+                    //渲染选课类型分布饼图
+                    renderTypeChart(byType);
+
+                    //渲染学院选课分布柱状图
+                    var byCollege = data.byCollege || [];
+                    renderCollegeChart(byCollege);
+
+                    //渲染时间冲突
+                    var conflicts = data.timeConflicts || [];
+                    renderConflicts(conflicts);
+                } else {
+                    $('#conflictArea').html('<div class="no-conflict">暂无选课数据</div>');
+                }
+            },
+            error: function(){
+                $('#conflictArea').html('<div style="color:#FF5722;">获取统计数据失败</div>');
+            }
         });
+
+        //渲染选课类型分布饼图
+        function renderTypeChart(byType){
+            var labels = [];
+            var values = [];
+            var colors = ['#1E9FFF', '#FFB800', '#FF5722', '#999'];
+            for(var i = 0; i < byType.length; i++){
+                labels.push(byType[i].typeName);
+                values.push(parseInt(byType[i].courseNum) || 0);
+            }
+            if(labels.length === 0){
+                labels = ['推荐选课', '方案内选课', '方案外选课'];
+                values = [0, 0, 0];
+            }
+            var ctx = document.getElementById('typeChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        //渲染学院选课分布柱状图
+        function renderCollegeChart(byCollege){
+            var labels = [];
+            var values = [];
+            for(var i = 0; i < byCollege.length; i++){
+                labels.push(byCollege[i].collegeName || '未知');
+                values.push(parseInt(byCollege[i].courseNum) || 0);
+            }
+            if(labels.length === 0){
+                labels = ['暂无数据'];
+                values = [0];
+            }
+            var ctx = document.getElementById('collegeChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '选课门数',
+                        data: values,
+                        backgroundColor: '#1E9FFF',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        //渲染时间冲突
+        function renderConflicts(conflicts){
+            if(!conflicts || conflicts.length === 0){
+                $('#conflictArea').html('<div class="no-conflict">恭喜！当前选课无时间冲突</div>');
+                return;
+            }
+            var html = '<div style="color:#FF5722;font-weight:bold;margin-bottom:10px;">检测到 ' + conflicts.length + ' 组时间冲突：</div>';
+            for(var i = 0; i < conflicts.length; i++){
+                html += '<div class="conflict-item">';
+                html += '<div><b>冲突' + (i+1) + '：</b>' + conflicts[i].conflictDesc + '</div>';
+                html += '<div style="font-size:12px;color:#999;margin-top:4px;">';
+                html += '课程1上课时间：' + (conflicts[i].classDate1 || '') + '<br/>';
+                html += '课程2上课时间：' + (conflicts[i].classDate2 || '') + '</div>';
+                html += '</div>';
+            }
+            $('#conflictArea').html(html);
+        }
     });
 </script>
 </html>
