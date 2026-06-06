@@ -180,6 +180,14 @@ public class ManageController {
         return b?Result.createSuccess("添加资讯信息成功"):Result.createFail("添加资讯信息失败");
     }
 
+    //删除资讯信息
+    @ResponseBody
+    @RequestMapping("deleteInformation")
+    public Result deleteInformation(@RequestBody Information information){
+        boolean b = manageService.deleteInformation(information.getId());
+        return b?Result.createSuccess("删除资讯信息成功"):Result.createFail("删除资讯信息失败");
+    }
+
     //教师管理页面
     @RequestMapping("teacher")
     public ModelAndView teacher(HttpServletRequest request){

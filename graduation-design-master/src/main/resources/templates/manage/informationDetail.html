@@ -24,9 +24,9 @@
                 <div class="layui-form-item" pane="">
                     <label class="layui-form-label role_title">资讯消息显示:</label>
                     <div class="layui-input-block" >
-                        <input type="radio" class="role_input left_input" name="roleType" value="3" th:field="*{information.roleId}" th:disabled="${information != null ?true:false}" ><span class="label">学生端</span>
-                        <input type="radio" class="role_input" name="roleType" value="2" th:field="*{information.roleId}" th:disabled="${information != null ?true:false}"><span class="label" >教师端</span>
-                        <input type="radio" class="role_input" name="roleType" value="1" th:field="*{information.roleId}" th:disabled="${information != null ?true:false}"}} disabled='disabled'> <span class="label">管理端</span>
+                        <input type="radio" class="role_input left_input" name="roleType" value="3" th:checked="${information == null or information.roleId == '3'}" th:disabled="${information != null}" ><span class="label">学生端</span>
+                        <input type="radio" class="role_input" name="roleType" value="2" th:checked="${information != null and information.roleId == '2'}" th:disabled="${information != null}"><span class="label" >教师端</span>
+                        <input type="radio" class="role_input" name="roleType" value="1" th:checked="${information != null and information.roleId == '1'}" th:disabled="${information != null}"> <span class="label">管理端</span>
                     </div>
                 </div>
                 <div class="information_title">
@@ -95,35 +95,50 @@
 
          //添加资讯信息
          window.addInformation = function () {
-             var user = [[${session.user}]];
-             console.log("user:",user)
+             var title = document.getElementById("title").value;
+             var content = document.getElementById("content").value;
+             var roleRadios = document.getElementsByName("roleType");
+             var roleId = "3";
+             for(var i = 0; i < roleRadios.length; i++){
+                 if(roleRadios[i].checked){
+                     roleId = roleRadios[i].value;
+                     break;
+                 }
+             }
 
+             if(!title || title.trim() === ''){
+                 layer.msg("请输入标题");
+                 return;
+             }
+             if(!content || content.trim() === ''){
+                 layer.msg("请输入内容");
+                 return;
+             }
 
-
-             // var title = document.getElementById("title").value;
-             // var content = document.getElementById("content").value;
-             // var data = {
-             //     'title': title,
-             //     'content': content
-             // };
-             // data = JSON.stringify(data);
-             // layui.jquery.ajax({
-             //     url: '/manage/addInformation',
-             //     method: 'post',
-             //     data: data,
-             //     contentType: "application/json;charset=utf-8",
-             //     traditional: true,
-             //     dataType: 'text',
-             //     success: function (res) {
-             //         res = JSON.parse(res)
-             //         if(res.code == '201'){
-             //             layer.msg(res.msg)
-             //         }else{
-             //             window.location.href="/manage/information";
-             //             layer.msg(res.data)
-             //         }
-             //     }
-             // });
+             var data = {
+                 'title': title,
+                 'content': content,
+                 'roleId': roleId
+             };
+             data = JSON.stringify(data);
+             layui.jquery.ajax({
+                 url: '/manage/addInformation',
+                 method: 'post',
+                 data: data,
+                 contentType: "application/json;charset=utf-8",
+                 traditional: true,
+                 dataType: 'text',
+                 success: function (res) {
+                     res = JSON.parse(res)
+                     if(res.code == '201'){
+                         layer.msg(res.message)
+                     }else{
+                         layer.msg('添加成功', {icon: 1}, function(){
+                             window.location.href="/manage/information";
+                         });
+                     }
+                 }
+             });
          }
     });
 </script>

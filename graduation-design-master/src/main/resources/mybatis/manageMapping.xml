@@ -157,4 +157,33 @@
       INSERT INTO role(id,name,createDate,state)
       VALUES(#{id},#{name},#{createDate},#{state})
     </insert>
+
+    <!-- 根据ID查询管理员信息 -->
+    <select id="selectManageUserById" resultType="com.kzl.entity.ManageUser">
+        SELECT id, loginName, username, roleId, createDate, state
+        FROM manage_user
+        WHERE id = #{id}
+    </select>
+
+    <!-- 修改管理员基本信息 -->
+    <update id="updateManageUserProfile" parameterType="com.kzl.entity.ManageUser">
+        UPDATE manage_user SET username = #{username}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 验证管理员密码 -->
+    <select id="verifyManageUserPassword" parameterType="com.kzl.entity.ManageUser" resultType="com.kzl.entity.ManageUser">
+        SELECT id, loginName, username FROM manage_user
+        WHERE loginName = #{loginName} AND password = #{password} AND state = '1'
+    </select>
+
+    <!-- 修改管理员密码 -->
+    <update id="updateManageUserPassword">
+        UPDATE manage_user SET password = #{newPassword} WHERE id = #{id}
+    </update>
+
+    <!-- 删除资讯信息 -->
+    <delete id="deleteInformation">
+        DELETE FROM information WHERE id = #{id}
+    </delete>
 </mapper>

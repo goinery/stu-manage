@@ -54,6 +54,7 @@
         function complain(d){
             return [
                 '<button type="button" style="text-align: center" class="layui-btn layui-btn-sm" onclick="updateInformation(\''+ d.id + '\')">查询/修改</button>',
+                '<button type="button" style="text-align: center" class="layui-btn layui-btn-danger layui-btn-sm" onclick="deleteInformation(\''+ d.id + '\')">删除</button>',
             ]
                 .join('');
         };
@@ -65,8 +66,32 @@
 
         //新增跳转页面
         window.addInformation = function () {
-            // window.location.href="/manage/informationDetail";
-            layer.msg("此功能暂时不提供")
+            window.location.href="/manage/informationDetail";
+        };
+
+        //删除资讯
+        window.deleteInformation = function(id){
+            layer.confirm('确定要删除该资讯吗？', {icon: 3, title:'提示'}, function(index){
+                $.ajax({
+                    url: '/manage/deleteInformation',
+                    method: 'post',
+                    data: JSON.stringify({'id': id}),
+                    contentType: "application/json;charset=utf-8",
+                    dataType: 'json',
+                    success: function(res){
+                        if(res.code === 200){
+                            layer.msg('删除成功', {icon: 1});
+                            tableIns.reload();
+                        } else {
+                            layer.msg(res.message || '删除失败', {icon: 2});
+                        }
+                    },
+                    error: function(){
+                        layer.msg('服务器连接失败', {icon: 2});
+                    }
+                });
+                layer.close(index);
+            });
         };
     });
 </script>

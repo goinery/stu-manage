@@ -67,4 +67,19 @@ public interface ManageService {
 
     //添加角色
     boolean addRole(Role role);
+
+    //根据ID查询管理员信息
+    ManageUser queryManageUserById(String id);
+
+    //修改管理员基本信息
+    boolean updateManageUserProfile(ManageUser manageUser);
+
+    //验证管理员密码
+    ManageUser verifyManageUserPassword(ManageUser manageUser);
+
+    //修改管理员密码
+    boolean updateManageUserPassword(String id, String newPassword);
+
+    //删除资讯信息
+    boolean deleteInformation(String id);
 }

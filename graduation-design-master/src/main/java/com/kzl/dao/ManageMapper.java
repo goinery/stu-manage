@@ -3,6 +3,7 @@ package com.kzl.dao;
 import com.alibaba.fastjson.JSONArray;
 import com.kzl.entity.*;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -54,4 +55,19 @@ public interface ManageMapper {
     int deleteRoleMenuRelByRoleId(String roleId);
 
     boolean insertRole(Role role);
+
+    //根据ID查询管理员信息
+    ManageUser selectManageUserById(String id);
+
+    //修改管理员基本信息
+    boolean updateManageUserProfile(ManageUser manageUser);
+
+    //验证管理员密码
+    ManageUser verifyManageUserPassword(ManageUser manageUser);
+
+    //修改管理员密码
+    boolean updateManageUserPassword(@Param("id") String id, @Param("newPassword") String newPassword);
+
+    //删除资讯信息
+    boolean deleteInformation(String id);
 }
