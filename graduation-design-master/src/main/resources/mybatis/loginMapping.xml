@@ -14,18 +14,20 @@
     </select>
 
     <select id="selectStudent" parameterType="com.kzl.entity.Student" resultType="com.kzl.entity.Student">
-        SELECT u.id,u.studentNumber,u.username,u.password,u.roleId,u.createDate,u.collegeId,r.name roleName
+        SELECT u.id,u.studentNumber,u.username,u.password,u.roleId,u.createDate,u.collegeId,u.phone,u.email,r.name roleName,c.name collegeName
         FROM student u
         LEFT JOIN role r ON u.roleId=r.id
+        LEFT JOIN college c ON u.collegeId=c.id
         WHERE u.state = '1'
         AND u.studentNumber = #{studentNumber}
         AND u.password = #{password}
     </select>
 
     <select id="selectTeacher" parameterType="com.kzl.entity.Teacher" resultType="com.kzl.entity.Teacher">
-        SELECT u.id,u.loginName,u.username,u.password,u.roleId,u.createDate,r.name roleName
+        SELECT u.id,u.loginName,u.username,u.password,u.roleId,u.createDate,u.collegeId,u.phone,u.email,r.name roleName,c.name collegeName
         FROM teacher u
         LEFT JOIN role r ON u.roleId=r.id
+        LEFT JOIN college c ON u.collegeId=c.id
         WHERE u.state = '1'
         AND u.loginName = #{loginName}
         AND u.password = #{password}

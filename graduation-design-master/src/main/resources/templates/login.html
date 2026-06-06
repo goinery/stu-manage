@@ -10,6 +10,8 @@
     <div class="middle_column">
         <div class="zh_title">学生选课管理系统</div>
         <div class="en_title">Student Selection Management System</div>
+        <div id="error_banner" style="display:none; background:#FF5722; color:#fff; padding:10px; margin-bottom:10px; border-radius:4px; text-align:center; font-size:14px;">
+        </div>
         <div class="layui-form-item">
             <label class="layui-form-label">账号:</label>
             <div class="layui-input-block">
@@ -47,6 +49,26 @@
     layui.use(['form', 'layedit', 'laydate'], function(){
         var form = layui.form ,
             layer = layui.layer ;
+
+        // 页面加载时检测数据库连接
+        layui.jquery.ajax({
+            url: '/user/checkConnection',
+            method: 'get',
+            dataType: 'json',
+            success: function(res){
+                if(res.code != 200){
+                    var banner = document.getElementById('error_banner');
+                    banner.innerText = '数据库连接异常，部分功能可能无法正常使用，请联系管理员。';
+                    banner.style.display = 'block';
+                }
+            },
+            error: function(){
+                var banner = document.getElementById('error_banner');
+                banner.innerText = '无法连接到服务器，请检查网络或联系管理员。';
+                banner.style.display = 'block';
+            }
+        });
+
         layui.$('#login_btn').on('click', function(){
             var username = document.getElementById("username").value;
             var password = document.getElementById("password").value;
@@ -69,7 +91,9 @@
                 dataType: 'html',
                 success: function (res) {
                     document.write(res);
-                    // console.log(res)
+                },
+                error: function(xhr, status, error){
+                    layer.alert('登录请求失败，请检查网络连接后重试。', {icon: 2});
                 }
             });
         });

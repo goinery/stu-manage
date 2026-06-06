@@ -11,8 +11,12 @@
                         [[${user.username}]]
                     </a>
                     <dl class="layui-nav-child">
-                        <dd><a href="">基本资料</a></dd>
-                        <dd><a href="">安全设置</a></dd>
+                        <dd th:if="${session.userType} eq '3'"><a href="/user/studentProfile">基本资料</a></dd>
+                        <dd th:if="${session.userType} eq '3'"><a href="/user/studentChangePassword">安全设置</a></dd>
+                        <dd th:if="${session.userType} eq '2'"><a href="/user/teacherProfile">基本资料</a></dd>
+                        <dd th:if="${session.userType} eq '2'"><a href="/user/teacherChangePassword">安全设置</a></dd>
+                        <dd th:if="${session.userType} eq '1'"><a href="javascript:;">基本资料</a></dd>
+                        <dd th:if="${session.userType} eq '1'"><a href="javascript:;">安全设置</a></dd>
                     </dl>
                 </li>
                 <li class="layui-nav-item"><a href="/logout">退出登录</a></li>

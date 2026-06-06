@@ -84,6 +84,8 @@ public class LoginController {
         modelAndView.addObject("loginName",teacher.getLoginName());
         modelAndView.addObject("roleName",teacher.getRoleName());
         modelAndView.addObject("roleId",teacher.getRoleId());
+        modelAndView.addObject("collegeId",teacher.getCollegeId());
+        modelAndView.addObject("collegeName",teacher.getCollegeName());
         return modelAndView;
     }
 
@@ -91,6 +93,7 @@ public class LoginController {
     public String index(HttpServletRequest request){
        request.getSession().removeAttribute("user");
        request.getSession().removeAttribute("menuList");
+       request.getSession().removeAttribute("userType");
        return "redirect:/";
     }
 

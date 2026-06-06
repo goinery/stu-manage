@@ -34,6 +34,7 @@ public class ManageController {
         modelAndView.addObject("userType","1");
         request.getSession().setAttribute("user",user);
         request.getSession().setAttribute("menuList",menuList);
+        request.getSession().setAttribute("userType","1");
         return modelAndView;
     }
 
