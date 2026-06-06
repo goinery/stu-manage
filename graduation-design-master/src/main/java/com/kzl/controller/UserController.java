@@ -1,6 +1,7 @@
 package com.kzl.controller;
 
 import com.kzl.entity.*;
+import com.kzl.service.ManageService;
 import com.kzl.service.StudentService;
 import com.kzl.service.TeacherService;
 import com.kzl.util.Result;
@@ -22,6 +23,8 @@ public class UserController {
     private StudentService studentService;
     @Autowired
     private TeacherService teacherService;
+    @Autowired
+    private com.kzl.service.ManageService manageService;
 
     // ===================== 学生基本信息 =====================
 
@@ -156,6 +159,73 @@ public class UserController {
         return b ? Result.createSuccess("密码修改成功") : Result.createFail("密码修改失败");
     }
 
+    // ===================== 管理员基本信息 =====================
+
+    //跳转管理员基本信息页面
+    @RequestMapping("manageProfile")
+    public ModelAndView manageProfile(HttpServletRequest request){
+        boolean state = judgeManageLoginState(request);
+        ModelAndView modelAndView = new ModelAndView();
+        if(!state){
+            modelAndView.setViewName("redirect:/");
+            return modelAndView;
+        }
+        ManageUser sessionUser = (ManageUser) request.getSession().getAttribute("user");
+        ManageUser manageUser = manageService.queryManageUserById(sessionUser.getId());
+        modelAndView.setViewName("manage/profile");
+        modelAndView.addObject("manageUser", manageUser);
+        return modelAndView;
+    }
+
+    //修改管理员基本信息
+    @ResponseBody
+    @RequestMapping("updateManageProfile")
+    public Result updateManageProfile(@RequestBody ManageUser manageUser, HttpServletRequest request){
+        boolean state = judgeManageLoginState(request);
+        if(!state){
+            return Result.createFail("请先登录");
+        }
+        ManageUser sessionUser = (ManageUser) request.getSession().getAttribute("user");
+        manageUser.setId(sessionUser.getId());
+        boolean b = manageService.updateManageUserProfile(manageUser);
+        if(b){
+            ManageUser updatedUser = manageService.queryManageUserById(sessionUser.getId());
+            updatedUser.setRoleName(sessionUser.getRoleName());
+            request.getSession().setAttribute("user", updatedUser);
+            return Result.createSuccess("修改成功");
+        }
+        return Result.createFail("修改失败");
+    }
+
+    //跳转管理员修改密码页面
+    @RequestMapping("manageChangePassword")
+    public String manageChangePassword(HttpServletRequest request){
+        boolean state = judgeManageLoginState(request);
+        return state ? "manage/changePassword" : "redirect:/";
+    }
+
+    //管理员修改密码
+    @ResponseBody
+    @RequestMapping("changeManagePassword")
+    public Result changeManagePassword(@RequestBody PasswordChange passwordChange, HttpServletRequest request){
+        boolean state = judgeManageLoginState(request);
+        if(!state){
+            return Result.createFail("请先登录");
+        }
+        ManageUser sessionUser = (ManageUser) request.getSession().getAttribute("user");
+        //验证旧密码
+        ManageUser checkUser = new ManageUser();
+        checkUser.setLoginName(sessionUser.getLoginName());
+        checkUser.setPassword(passwordChange.getOldPassword());
+        ManageUser verified = manageService.verifyManageUserPassword(checkUser);
+        if(verified == null){
+            return Result.createFail("当前密码输入错误");
+        }
+        //修改密码
+        boolean b = manageService.updateManageUserPassword(sessionUser.getId(), passwordChange.getNewPassword());
+        return b ? Result.createSuccess("密码修改成功") : Result.createFail("密码修改失败");
+    }
+
     // ===================== 数据库连接检测 =====================
 
     @ResponseBody
@@ -184,5 +254,11 @@ public class UserController {
         Teacher teacher = (Teacher) request.getSession().getAttribute("user");
         List<Menu> menus = (List) request.getSession().getAttribute("menuList");
         return teacher != null && menus != null && menus.size() > 0;
+    }
+
+    private boolean judgeManageLoginState(HttpServletRequest request){
+        ManageUser user = (ManageUser) request.getSession().getAttribute("user");
+        List<Menu> menus = (List) request.getSession().getAttribute("menuList");
+        return user != null && menus != null && menus.size() > 0;
     }
 }
