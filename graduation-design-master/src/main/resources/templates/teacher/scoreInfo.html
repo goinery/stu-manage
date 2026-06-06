@@ -26,27 +26,28 @@
                 <div class="search_top">
                     <div class="dropdown search_college2">
                         <span class="name_title">选择学年:</span>
-                        <select class="dropbtn" id="tag" name="tag">
-                            <option >请选择学年</option>
-                            <option value="1">2020年下半学年</option>
-                            <option value="2">2020年上半学年</option>
-                            <option value="3">2019年下半学年</option>
-                            <option value="3">2019年上半学年</option>
+                        <select class="dropbtn" id="academicYearSelect" name="academicYear">
+                            <option value="">全部学年</option>
+                            <option th:each="year : ${courseAcademicYears}"
+                                    th:value="${year.academicYear}"
+                                    th:text="${year.academicYear}"
+                                    th:selected="${year.academicYear == currentAcademicYear}">
+                            </option>
                         </select>
                     </div>
                     <div class="dropdown search_college2">
                         <span class="name_title">选择课程:</span>
-                        <select class="dropbtn" id="tag2" name="tag">
-                            <option >请选择课程</option>
-                            <option value="1">音乐鉴赏</option>
-                            <option value="2">音乐鉴赏2</option>
-                            <option value="3">音乐鉴赏3</option>
-                            <option value="3">音乐鉴赏4</option>
+                        <select class="dropbtn" id="courseSelect" name="course">
+                            <option value="">全部课程</option>
+                            <option th:each="course : ${courses}"
+                                    th:value="${course.courseName}"
+                                    th:text="${course.courseName}">
+                            </option>
                         </select>
                     </div>
                     <div class="search_name2">
                         <span class="name_title">学生姓名:</span>
-                        <input type="text" name="username" id="username"  autocomplete="off" placeholder="请输入学生姓名" class="search_input">
+                        <input type="text" name="username" id="username" autocomplete="off" placeholder="请输入学生姓名" class="search_input">
                     </div>
                     <div class="search_btn2">
                         <button type="button" class="layui-btn" data-type="reload">搜索</button>
@@ -55,7 +56,6 @@
                 <div class="clear"></div>
                 <div class="teacher_content">
                     <blockquote class="layui-elem-quote">
-
                         <table class="layui-hide" id="teacher" lay-filter="teacher"></table>
                     </blockquote>
                 </div>
@@ -71,110 +71,169 @@
             table = layui.table,
             $ = layui.jquery;
 
+        var currentAcademicYear = [[${currentAcademicYear}]] || '';
+
+        // 初始化表格
         var tableIns = table.render({
             elem: '#teacher',
-            url:'/teacher/courseList',
+            url: '/teacher/courseList',
+            where: { academicYear: currentAcademicYear },
             cols: [
                 [
-                    {field:'studentName', title:'学生姓名'},
-                    {field:'courseName', title:'课程名'},
-                    {field:'courseCredits', title:'课程学分'},
-                    {field:'academicYear', title: '学年'},
-                    {templet: complain, title: '成绩是否合格', align:'center'},
-                    {templet: complain2, title: '操作', align:'center'},
+                    {field:'studentNumber', title:'学号', width:160},
+                    {field:'studentName', title:'学生姓名', width:120},
+                    {field:'courseName', title:'课程名', width:180},
+                    {field:'courseCredits', title:'课程学分', width:100},
+                    {field:'academicYear', title: '学年', width:140},
+                    {templet: scoreStatus, title: '成绩状态', align:'center', width:120},
+                    {templet: scoreActions, title: '操作', align:'center', minWidth:200},
                 ]
             ],
             id: 'teacherReload',
         });
 
-        function complain(d){
-            var text;
-            if(d.state == "0" ){
+        // 成绩状态列
+        function scoreStatus(d){
+            var text, color;
+            if(d.state == "0"){
                 text = "未评价";
-            }else{
+                color = "#FFB800";
+            } else {
                 if(d.isQualified == "0"){
                     text = "不合格";
-                }else{
+                    color = "#FF5722";
+                } else {
                     text = "成绩合格";
+                    color = "#009688";
                 }
             }
-            return [
-                '<div style="text-align: center">'+text+'</div>',
-            ]
-                .join('');
-        };
-
-        //是否禁用按钮
-        function complain2(d){
-            return [
-                '<button type="button" style="text-align: center" class="layui-btn layui-btn-sm" onclick="academicallyQualified(&quot;'+ d.id + '&quot;,&quot;'+ d.state + '&quot;,&quot;'+ d.teachEndDate+'&quot;,'+'1'+')">成绩合格</button>',
-                '<button type="button" style="text-align: center" class="layui-btn layui-btn-sm" onclick="disqualification(&quot;'+ d.id + '&quot;,&quot;'+ d.state+ '&quot;,&quot;'+ d.teachEndDate+'&quot;,'+'2'+')">成绩不合格</button>'
-            ]
-                .join('');
-        };
-
-        //成绩合格
-        window.academicallyQualified = function(id,state,teachEndDate,type){
-            if(state=="1" ){
-                layer.msg("当前课程已评分！")
-                return;
-            }
-            var nowDate =Date.parse(new Date());
-            var endDate = Date.parse(teachEndDate);
-            var timeDifference = nowDate-endDate;
-            if(state=="0" && timeDifference < 0){
-                layer.msg("当前课程未结束，无法评分！")
-                return;
-            }
-            updateStudentScore(id,type,"");
-        };
-
-        window.disqualification = function(id,state,teachEndDate,type){
-            if(state=="1" ){
-                layer.msg("当前课程已评分！")
-                return;
-            }
-            var nowDate =Date.parse(new Date());
-            var endDate = Date.parse(teachEndDate);
-            var timeDifference = nowDate-endDate;
-            if(state=="0" && timeDifference < 0){
-                layer.msg("当前课程未结束，无法评分！")
-                return;
-            }
-            //打开窗口添加不合格说明
-
+            return '<div style="text-align:center; color:' + color + '; font-weight:bold;">' + text + '</div>';
         }
 
-        //修改学院状态 id  是否合格、评分备注
-        window.updateStudentScore = function (id,isQualified,creditsRemark) {
-            var data = {
-                'id': id,
-                'isQualified': isQualified,
-                'creditsRemark': creditsRemark,
-            };
-            data = JSON.stringify(data);
-            // $.ajax({
-            //     url: '/manage/updateTeacher',
-            //     method: 'post',
-            //     data: data,
-            //     contentType: "application/json;charset=utf-8",
-            //     traditional: true,
-            //     dataType: 'text',
-            //     success: function (res) {
-            //         res = JSON.parse(res)
-            //         if(res.code == '201'){
-            //             layer.msg(res.data)
-            //         }else{
-            //             var message = res.data;
-            //             tableIns.reload();
-            //             layer.msg(res.data)
-            //         }
-            //     }
-            // });
+        // 操作列按钮
+        function scoreActions(d){
+            if(d.state == "1"){
+                return '<span style="color:#999;">已评分</span>';
+            }
+            return [
+                '<button type="button" class="layui-btn layui-btn-sm" onclick="markQualified(&quot;' + d.id + '&quot;,&quot;' + d.state + '&quot;,&quot;' + d.teachEndDate + '&quot;)">成绩合格</button>',
+                '<button type="button" class="layui-btn layui-btn-sm layui-btn-danger" onclick="markUnqualified(&quot;' + d.id + '&quot;,&quot;' + d.state + '&quot;,&quot;' + d.teachEndDate + '&quot;)">成绩不合格</button>'
+            ].join(' ');
+        }
+
+        // 成绩合格
+        window.markQualified = function(id, state, teachEndDate){
+            if(state == "1"){
+                layer.msg("当前课程已评分!");
+                return;
+            }
+            var nowDate = Date.parse(new Date());
+            var endDate = Date.parse(teachEndDate);
+            if(state == "0" && nowDate < endDate){
+                layer.msg("当前课程未结束，无法评分!");
+                return;
+            }
+            layer.confirm('确定将该学生成绩评定为合格吗?', {icon: 3, title:'成绩评定'}, function(index){
+                updateStudentScore(id, "1", "");
+                layer.close(index);
+            });
         };
 
+        // 成绩不合格 - 弹出备注窗口
+        window.markUnqualified = function(id, state, teachEndDate){
+            if(state == "1"){
+                layer.msg("当前课程已评分!");
+                return;
+            }
+            var nowDate = Date.parse(new Date());
+            var endDate = Date.parse(teachEndDate);
+            if(state == "0" && nowDate < endDate){
+                layer.msg("当前课程未结束，无法评分!");
+                return;
+            }
+            // 打开不合格备注输入弹窗
+            layer.open({
+                type: 1,
+                title: '成绩不合格 - 填写备注说明',
+                area: ['450px', '280px'],
+                content: '<div style="padding:20px;">' +
+                    '<div class="layui-form-item">' +
+                    '<label class="layui-form-label">备注说明</label>' +
+                    '<div class="layui-input-block">' +
+                    '<textarea id="unqualifiedRemark" placeholder="请输入不合格原因说明" class="layui-textarea" style="height:120px;"></textarea>' +
+                    '</div></div></div>',
+                btn: ['确认提交', '取消'],
+                yes: function(index){
+                    var remark = $('#unqualifiedRemark').val();
+                    if(!remark || remark.trim() === ''){
+                        layer.msg('请填写不合格原因说明');
+                        return;
+                    }
+                    updateStudentScore(id, "0", remark);
+                    layer.close(index);
+                }
+            });
+        };
 
+        // 提交评分
+        window.updateStudentScore = function(id, isQualified, creditsRemark){
+            var data = JSON.stringify({
+                'id': id,
+                'isQualified': isQualified,
+                'creditsRemark': creditsRemark
+            });
+            $.ajax({
+                url: '/teacher/updateScore',
+                method: 'post',
+                data: data,
+                contentType: "application/json;charset=utf-8",
+                dataType: 'json',
+                success: function(res){
+                    if(res.code == 200){
+                        layer.msg(res.message || '评分成功', {icon: 1});
+                        tableIns.reload();
+                    } else {
+                        layer.msg(res.message || '评分失败', {icon: 2});
+                    }
+                },
+                error: function(){
+                    layer.msg('服务器连接失败，请稍后重试', {icon: 2});
+                }
+            });
+        };
 
+        // 学年切换时重新加载课程下拉和表格
+        $('#academicYearSelect').on('change', function(){
+            var year = $(this).val();
+            // 重载表格
+            table.reload('teacherReload', {
+                where: { academicYear: year },
+                page: {curr: 1}
+            });
+            // 重载页面以更新课程下拉
+            window.location.href = '/teacher/scoreInfo?academicYear=' + year;
+        });
+
+        // 搜索功能
+        var active = {
+            reload: function(){
+                var username = $('#username').val();
+                var courseName = $('#courseSelect').val();
+                table.reload('teacherReload', {
+                    where: {
+                        academicYear: $('#academicYearSelect').val(),
+                        username: username,
+                        courseName: courseName
+                    },
+                    page: {curr: 1}
+                });
+            }
+        };
+
+        $('.teacher_column .layui-btn').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
     });
 </script>
 </body>

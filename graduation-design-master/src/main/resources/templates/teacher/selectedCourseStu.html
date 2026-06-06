@@ -23,27 +23,28 @@
                 <div class="search_top">
                     <div class="dropdown search_college2">
                         <span class="name_title">选择学年:</span>
-                        <select class="dropbtn" id="tag" name="tag">
-                            <option >请选择学年</option>
-                            <option value="1">2020年下半学年</option>
-                            <option value="2">2020年上半学年</option>
-                            <option value="3">2019年下半学年</option>
-                            <option value="3">2019年上半学年</option>
+                        <select class="dropbtn" id="academicYearSelect" name="academicYear">
+                            <option value="">全部学年</option>
+                            <option th:each="year : ${courseAcademicYears}"
+                                    th:value="${year.academicYear}"
+                                    th:text="${year.academicYear}"
+                                    th:selected="${year.academicYear == currentAcademicYear}">
+                            </option>
                         </select>
                     </div>
                     <div class="dropdown search_college2">
                         <span class="name_title">选择课程:</span>
-                        <select class="dropbtn" id="tag2" name="tag">
-                            <option >请选择课程</option>
-                            <option value="1">音乐鉴赏</option>
-                            <option value="2">音乐鉴赏2</option>
-                            <option value="3">音乐鉴赏3</option>
-                            <option value="3">音乐鉴赏4</option>
+                        <select class="dropbtn" id="courseSelect" name="course">
+                            <option value="">全部课程</option>
+                            <option th:each="course : ${courses}"
+                                    th:value="${course.courseName}"
+                                    th:text="${course.courseName}">
+                            </option>
                         </select>
                     </div>
                     <div class="search_name2">
                         <span class="name_title">学生姓名:</span>
-                        <input type="text" name="username" id="username"  autocomplete="off" placeholder="请输入学生姓名" class="search_input">
+                        <input type="text" name="username" id="username" autocomplete="off" placeholder="请输入学生姓名" class="search_input">
                     </div>
                     <div class="search_btn2">
                         <button type="button" class="layui-btn" data-type="reload">搜索</button>
@@ -52,7 +53,6 @@
                 <div class="clear"></div>
                 <div class="teacher_content">
                     <blockquote class="layui-elem-quote">
-
                         <table class="layui-hide" id="teacher" lay-filter="teacher"></table>
                     </blockquote>
                 </div>
@@ -61,29 +61,58 @@
         </div>
     </div>
 </div>
-<script src="../../static/layui/layui.all.js"/>
-<script></script>
-<script>
+<script src="../../static/layui/layui.all.js"></script>
+<script th:inline="javascript">
     layui.use(['table', 'layer'], function(){
         var layer = layui.layer,
             table = layui.table,
             $ = layui.jquery;
 
+        var currentAcademicYear = [[${currentAcademicYear}]] || '';
+
         var tableIns = table.render({
             elem: '#teacher',
-            url:'/teacher/studentInfoInCourse',
+            url: '/teacher/studentInfoInCourse',
+            where: { academicYear: currentAcademicYear },
             cols: [
                 [
-                    {field:'studentNumber', title:'学号'},
-                    {field:'studentName', title:'学生姓名'},
-                    {field:'courseName', title:'课程名'},
-                    {field:'academicYear', title: '学年'},
-                    {field:'teachEndDate', title: '课程结束时间'},
+                    {field:'studentNumber', title:'学号', width:160},
+                    {field:'studentName', title:'学生姓名', width:120},
+                    {field:'courseName', title:'课程名', width:180},
+                    {field:'academicYear', title:'学年', width:140},
+                    {field:'teachEndDate', title:'课程结束时间', minWidth:160},
                 ]
             ],
             id: 'teacherReload',
         });
 
+        // 学年切换时重新加载
+        $('#academicYearSelect').on('change', function(){
+            var year = $(this).val();
+            window.location.href = '/teacher/selectedCourseStu?academicYear=' + year;
+        });
+
+        // 搜索功能
+        var active = {
+            reload: function(){
+                var username = $('#username').val();
+                var courseName = $('#courseSelect').val();
+                var academicYear = $('#academicYearSelect').val();
+                table.reload('teacherReload', {
+                    where: {
+                        academicYear: academicYear,
+                        username: username,
+                        courseName: courseName
+                    },
+                    page: {curr: 1}
+                });
+            }
+        };
+
+        $('.teacher_column .layui-btn').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
     });
 </script>
 </body>
