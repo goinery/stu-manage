@@ -40,8 +40,12 @@ public class ManageController {
 
     @RequestMapping("index")
     public String index(HttpServletRequest request){
-        boolean state = judgeUserLoginState(request);
-        return state?"index":"redirect:/";
+        Object user = request.getSession().getAttribute("user");
+        List<Menu> menus = (List) request.getSession().getAttribute("menuList");
+        if(user == null || menus == null || menus.size() == 0){
+            return "redirect:/";
+        }
+        return "index";
     }
 
     @RequestMapping("menu")
@@ -213,11 +217,10 @@ public class ManageController {
     @RequestMapping("student")
     public ModelAndView student(HttpServletRequest request){
         boolean state = judgeUserLoginState(request);
-//        return state?"/manage/student":"redirect:/";
 
         ModelAndView modelAndView = new ModelAndView();
         List<Map> colleges = service.selectCollegeList();
-        modelAndView.setViewName(state?"manage/teacher":"redirect:/");
+        modelAndView.setViewName(state?"manage/student":"redirect:/");
         modelAndView.addObject("collegeList",colleges);
         return modelAndView;
     }

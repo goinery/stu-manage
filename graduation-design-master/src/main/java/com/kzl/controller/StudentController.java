@@ -109,6 +109,7 @@ public class StudentController {
         modelAndView.addObject("academicYear",courseAcademicYear.getAcademicYearName());
         modelAndView.addObject("creditsCount",creditsCount);
         modelAndView.addObject("courseCount",courses.size());
+        modelAndView.setViewName("student/selectedCourse");
         return modelAndView;
     }
 
@@ -127,6 +128,7 @@ public class StudentController {
         modelAndView.addObject("complete",map.get("complete"));
         modelAndView.addObject("unfinished",map.get("unfinished"));
         modelAndView.addObject("selected",map.get("selected"));
+        modelAndView.setViewName("student/statistical");
         return modelAndView;
     }
 

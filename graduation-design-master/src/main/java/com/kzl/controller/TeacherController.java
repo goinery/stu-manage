@@ -77,9 +77,28 @@ public class TeacherController {
 
     //成绩管理
     @RequestMapping("scoreInfo")
-    public String scoreInfo(HttpServletRequest request){
+    public ModelAndView scoreInfo(HttpServletRequest request){
         boolean state = judgeUserLoginState(request);
-        return state?"teacher/scoreInfo":"redirect:/";
+        ModelAndView modelAndView = new ModelAndView();
+        if(!state){
+            modelAndView.setViewName("redirect:/");
+            return modelAndView;
+        }
+        Teacher user = (Teacher) request.getSession().getAttribute("user");
+        CourseAcademicYear courseAcademicYear = studentService.getCourseAcademicYear();
+        // 支持URL参数切换学年
+        String yearParam = request.getParameter("academicYear");
+        String selectedYear = courseAcademicYear.getAcademicYear();
+        if(yearParam != null && !yearParam.isEmpty()){
+            selectedYear = yearParam;
+        }
+        List<CourseAcademicYear> courseAcademicYears = teacherService.selectCourseYearList(courseAcademicYear.getId());
+        List<Course> courses = teacherService.selectCourseList(user.getId(), selectedYear);
+        modelAndView.setViewName("teacher/scoreInfo");
+        modelAndView.addObject("courseAcademicYears", courseAcademicYears);
+        modelAndView.addObject("courses", courses);
+        modelAndView.addObject("currentAcademicYear", selectedYear);
+        return modelAndView;
     }
 
     //教师关联课程下所有的学生信息查询
@@ -87,8 +106,15 @@ public class TeacherController {
     @RequestMapping("courseList")
     public Result courseList(HttpServletRequest request){
         Teacher user = (Teacher) request.getSession().getAttribute("user");
-        CourseAcademicYear courseAcademicYear = studentService.getCourseAcademicYear();
-        List<StudentCourseRel> courses = teacherService.queryStudentList(courseAcademicYear.getAcademicYear(),user.getId());
+        String academicYearParam = request.getParameter("academicYear");
+        String academicYear;
+        if(academicYearParam != null && !academicYearParam.isEmpty()){
+            academicYear = academicYearParam;
+        } else {
+            CourseAcademicYear courseAcademicYear = studentService.getCourseAcademicYear();
+            academicYear = courseAcademicYear.getAcademicYear();
+        }
+        List<StudentCourseRel> courses = teacherService.queryStudentList(academicYear, user.getId());
         return Result.create(0,"",courses);
     }
 
@@ -115,11 +141,17 @@ public class TeacherController {
         }
         Teacher user = (Teacher) request.getSession().getAttribute("user");
         CourseAcademicYear courseAcademicYear = studentService.getCourseAcademicYear();
+        String yearParam = request.getParameter("academicYear");
+        String selectedYear = courseAcademicYear.getAcademicYear();
+        if(yearParam != null && !yearParam.isEmpty()){
+            selectedYear = yearParam;
+        }
         List<CourseAcademicYear> courseAcademicYears = teacherService.selectCourseYearList(courseAcademicYear.getId());
-        List<Course> courses = teacherService.selectCourseList(user.getId(), courseAcademicYear.getAcademicYear());
+        List<Course> courses = teacherService.selectCourseList(user.getId(), selectedYear);
         modelAndView.setViewName("teacher/selectedCourseStu");
-        modelAndView.addObject("courseAcademicYears",courseAcademicYears);
-        modelAndView.addObject("courses",courses);
+        modelAndView.addObject("courseAcademicYears", courseAcademicYears);
+        modelAndView.addObject("courses", courses);
+        modelAndView.addObject("currentAcademicYear", selectedYear);
         return modelAndView;
     }
 
@@ -128,44 +160,35 @@ public class TeacherController {
     @RequestMapping("studentInfoInCourse")
     public Result studentInfoInCourse(HttpServletRequest request){
         Teacher user = (Teacher) request.getSession().getAttribute("user");
-        CourseAcademicYear courseAcademicYear = studentService.getCourseAcademicYear();
-        String academicYear = courseAcademicYear.getAcademicYear();
-        List<StudentCourseRel> studentCourses = teacherService.getStudentInCourse(academicYear,user.getId());
+        String academicYearParam = request.getParameter("academicYear");
+        String academicYear;
+        if(academicYearParam != null && !academicYearParam.isEmpty()){
+            academicYear = academicYearParam;
+        } else {
+            CourseAcademicYear courseAcademicYear = studentService.getCourseAcademicYear();
+            academicYear = courseAcademicYear.getAcademicYear();
+        }
+        List<StudentCourseRel> studentCourses = teacherService.getStudentInCourse(academicYear, user.getId());
         return Result.create(0,"",studentCourses);
     }
 
 
 
     //统计信息
-    // @RequestMapping("statisticalInfo")
-    // public String statisticalInfo(HttpServletRequest request){
-    //     boolean state = judgeUserLoginState(request);
-    //     return state?"teacher/statisticalInfo":"redirect:/";
-    // }
-
     @RequestMapping("statisticalInfo")
-public ModelAndView statisticalInfo(HttpServletRequest request){
+    public ModelAndView statisticalInfo(HttpServletRequest request){
         boolean state = judgeUserLoginState(request);
         ModelAndView modelAndView = new ModelAndView();
-        if (state ==  true)
-        {
+        if(state){
             Teacher user = (Teacher) request.getSession().getAttribute("user");
-            List<TeacherStatis> CoutStudent_collage  = teacherService.selectTeacherStatisList(user.getId());
+            List<TeacherStatis> CoutStudent_collage = teacherService.selectTeacherStatisList(user.getId());
             modelAndView.setViewName("teacher/statisticalInfo");
-            modelAndView.addObject("TeacherStatis",CoutStudent_collage);
+            modelAndView.addObject("TeacherStatis", CoutStudent_collage);
         } else {
             modelAndView.setViewName("redirect:/");
         }
-        return  modelAndView;
+        return modelAndView;
     }
-
-
-
-
-
-
-
-
 
 
     private boolean judgeUserLoginState(HttpServletRequest request){
