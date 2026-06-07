@@ -66,6 +66,11 @@
                             <div class="layui-field-box course-content" th:id="'content'+${course.id}"></div>
                         </fieldset>
                     </div>
+                    <div class="clear"></div>
+                    <div class="course-line" style="margin-top:10px;text-align:right;">
+                        <button type="button" class="layui-btn layui-btn-sm layui-btn-danger"
+                                th:attr="onclick='dropCourse(\'' + ${course.id} + '\')'">退选该课程</button>
+                    </div>
                 </blockquote>
 
                 <blockquote class="layui-elem-quote course-column count-box">
@@ -101,6 +106,39 @@
                 document.getElementById('content'+courseId).innerHTML = remark;
             }
         });
+
+        window.dropCourse = function(courseId){
+            layer.confirm('确定要退选该课程吗？退课后需重新选课。', {icon: 3, title:'退课确认'}, function(index){
+                layer.close(index);
+                var studentId = [[${session.user.id}]];
+                var data = JSON.stringify({
+                    'courseId': courseId,
+                    'type': '1',
+                    'studentId': studentId
+                });
+                $.ajax({
+                    url: '/student/courseDrop',
+                    method: 'post',
+                    data: data,
+                    contentType: "application/json;charset=utf-8",
+                    traditional: true,
+                    dataType: 'text',
+                    success: function (res) {
+                        res = JSON.parse(res);
+                        if(res.code == 201){
+                            layer.msg(res.message, {icon: 2});
+                        }else{
+                            layer.msg(res.message || '退课成功', {icon: 1}, function(){
+                                window.location.reload();
+                            });
+                        }
+                    },
+                    error: function(){
+                        layer.msg('服务器连接失败', {icon: 2});
+                    }
+                });
+            });
+        };
     });
 </script>
 </html>

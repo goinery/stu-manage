@@ -183,12 +183,12 @@
 
         function selectBtn(d, type){
             if(d.type == "1"){
-                return '<button type="button" class="layui-btn layui-btn-sm layui-btn-disabled" disabled>已选</button>';
+                return '<button type="button" class="layui-btn layui-btn-sm layui-btn-danger" onclick="courseDrop(\''+ d.id +'\',\''+ type +'\')">退课</button>';
             }
             if(d.optional <= d.selected){
                 return '<button type="button" class="layui-btn layui-btn-sm layui-btn-disabled" disabled>已满</button>';
             }
-            return '<button type="button" class="layui-btn layui-btn-sm" onclick="courseSelection(\''+ d.id +'\',\''+ type +'\')">选课志愿</button>';
+            return '<button type="button" class="layui-btn layui-btn-sm layui-btn-normal" onclick="courseSelection(\''+ d.id +'\',\''+ type +'\')">选课志愿</button>';
         }
 
         function escapeHtml(text){
@@ -235,8 +235,45 @@
             layer.open({
                 type: 1,
                 title: '课程详情',
-                area: ['500px', '300px'],
-                content: '<div style="padding:15px;line-height:28px;">' + remark + '</div>'
+                area: ['600px', '400px'],
+                content: '<div style="padding:15px;line-height:28px;overflow-y:auto;max-height:350px;">' + remark + '</div>'
+            });
+        };
+
+        //退课
+        window.courseDrop = function(id, type){
+            layer.confirm('确定要退选该课程吗？退课后需重新选课。', {icon: 3, title:'退课确认'}, function(index){
+                layer.close(index);
+                var data = {
+                    'courseId': id,
+                    'type': '1',
+                    'studentId': studentId,
+                    'selectionType': type
+                };
+                data = JSON.stringify(data);
+                $.ajax({
+                    url: '/student/courseDrop',
+                    method: 'post',
+                    data: data,
+                    contentType: "application/json;charset=utf-8",
+                    traditional: true,
+                    dataType: 'text',
+                    success: function (res) {
+                        res = JSON.parse(res);
+                        if(res.code == 201){
+                            layer.msg(res.message, {icon: 2});
+                        }else{
+                            layer.msg(res.message || '退课成功', {icon: 1}, function(){
+                                recommendTable.reload();
+                                planTable.reload();
+                                outsideTable.reload();
+                            });
+                        }
+                    },
+                    error: function(){
+                        layer.msg('服务器连接失败', {icon: 2});
+                    }
+                });
             });
         };
 
