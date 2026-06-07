@@ -1,3 +1,18 @@
+su - omm
+
+查询openGauss数据库服务是否启动
+gs_om -t status --detail
+
+启动数据库服务（如数据库未启动，可执行此步进行启动）
+gs_om -t start;
+
+登录openGauss数据库服务
+gsql -d postgres -p 26000 -r
+
+mvn clean -f "c:\Users\gongyi\Desktop\stu-manage\graduation-design-master\pom.xml"
+mvn package -f "c:\Users\gongyi\Desktop\stu-manage\graduation-design-master\pom.xml"
+java -jar graduation-design-master/target/springboot-student.jar
+http://localhost:8088/
 # stu-manage
 
 #### 介绍
