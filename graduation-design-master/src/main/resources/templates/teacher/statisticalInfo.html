@@ -2,7 +2,7 @@
 <html lang="zh"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
-      xmlns:="http://www.w3.org/1999/xhtml"
+      xmlns="http://www.w3.org/1999/xhtml"
 >
 <head>
     <meta charset="UTF-8"/>
@@ -10,6 +10,13 @@
     <link href="../../static/css/index.css" type="text/css" rel="stylesheet"/>
     <link href="../../static/css/course.css" type="text/css" rel="stylesheet"/>
     <link rel="stylesheet" href="../../static/layui/css/layui.css"/>
+    <style>
+        .stat-row{display:flex;flex-wrap:wrap;gap:15px;margin-bottom:15px;}
+        .stat-card{flex:1;min-width:200px;text-align:center;background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.1);padding:20px 0;}
+        .stat-card .num{font-size:32px;font-weight:bold;margin:8px 0;}
+        .stat-card .label{font-size:14px;color:#666;}
+        .chart-box{background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.1);padding:15px;margin:10px 0;}
+    </style>
 </head>
 <body class="layui-layout-body">
 <div class="layui-layout layui-layout-admin">
@@ -25,22 +32,97 @@
                     选课统计
                 </blockquote>
 
-                <blockquote class="layui-elem-quote course-column count-box"  th:each="ths:${TeacherStatis}">
-                    <div>已完成课程统计</div>
+                <!-- 统计卡片 -->
+                <div class="stat-row">
+                    <div class="stat-card" style="border-top:4px solid #1E9FFF;">
+                        <div class="label">选课总人数</div>
+                        <div class="num" style="color:#1E9FFF;" id="totalStudents">0</div>
+                    </div>
+                    <div class="stat-card" style="border-top:4px solid #FFB800;">
+                        <div class="label">授课课程数</div>
+                        <div class="num" style="color:#FFB800;" id="totalCourses">0</div>
+                    </div>
+                    <div class="stat-card" style="border-top:4px solid #5FB878;">
+                        <div class="label">涉及学院数</div>
+                        <div class="num" style="color:#5FB878;" id="totalColleges">0</div>
+                    </div>
+                </div>
+
+                <!-- 按学院统计 -->
+                <blockquote class="layui-elem-quote" style="margin-top:15px;">
+                    各学院选课人数统计
+                </blockquote>
+                <blockquote class="layui-elem-quote course-column count-box" th:each="ths:${TeacherStatis}">
+                    <div>学院: <span class="collage_num" th:text="${ths.name}" style="font-weight:bold;color:#1E9FFF;"></span></div>
                     <hr>
-                    <div class="count-tip">当前已选课程人数:<span class="count_num" th:text="${ths.count}"></span></div>
-                    <div class="count-tip">当前已选学员专业:<span class="collage_num" th:text="${ths.name}"></span></div>
+                    <div class="count-tip">已选课程人数:<span class="count_num" th:text="${ths.count}"></span></div>
                     <div class="clear"></div>
                 </blockquote>
+
+                <!-- 图表区域 -->
+                <div class="chart-box">
+                    <h4 style="text-align:center;margin-bottom:10px;">各学院选课人数分布</h4>
+                    <canvas id="collegeChart" width="600" height="300" style="display:block;margin:0 auto;"></canvas>
+                </div>
             </div>
         </div>
     </div>
 </div>
 </body>
 <script src="../../static/layui/layui.all.js"></script>
-<script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script th:inline="javascript">
     layui.use(['element'], function(){
         var element = layui.element;
+
+        var statisData = [[${TeacherStatis}]];
+        var totalStudents = 0;
+        var totalColleges = statisData.length;
+        var labels = [];
+        var values = [];
+        for(var i = 0; i < statisData.length; i++){
+            var count = parseInt(statisData[i].count) || 0;
+            totalStudents += count;
+            labels.push(statisData[i].name);
+            values.push(count);
+        }
+        document.getElementById('totalStudents').textContent = totalStudents;
+        document.getElementById('totalColleges').textContent = totalColleges;
+
+        var courseCount = 0;
+        var courses = [[${session.courses}]];
+        if(courses){
+            courseCount = courses.length;
+        }
+        document.getElementById('totalCourses').textContent = courseCount > 0 ? courseCount : '--';
+
+        if(labels.length > 0){
+            var ctx = document.getElementById('collegeChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '选课人数',
+                        data: values,
+                        backgroundColor: ['#1E9FFF', '#FFB800', '#5FB878', '#FF5722', '#9C27B0'],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
     });
 </script>
 </html>
