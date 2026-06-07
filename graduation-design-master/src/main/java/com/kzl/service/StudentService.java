@@ -67,4 +67,6 @@ public interface StudentService {
     //选课总体统计
     Map querySelectionOverview(String studentId);
 
+    //学生退课
+    boolean dropStudentCourse(StudentCourseRel studentCourseRel);
 }

@@ -317,4 +317,16 @@ public class StudentServiceImpl implements StudentService {
         Map overview = studentMapper.selectSelectionOverview(studentId);
         return overview != null ? overview : new HashMap();
     }
+
+    @Override
+    public boolean dropStudentCourse(StudentCourseRel studentCourseRel) {
+        boolean b = studentMapper.deleteStudentCourseRel(studentCourseRel);
+        if(b){
+            Course course2 = new Course();
+            course2.setId(studentCourseRel.getCourseId());
+            course2.setUseNumber(-1);
+            studentMapper.updateCourse(course2);
+        }
+        return b;
+    }
 }

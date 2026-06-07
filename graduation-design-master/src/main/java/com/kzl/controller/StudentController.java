@@ -158,6 +158,24 @@ public class StudentController {
         return Result.createSuccess(stage);
     }
 
+    //学生退课
+    @ResponseBody
+    @RequestMapping("courseDrop")
+    public Result courseDrop(@RequestBody StudentCourseRel studentCourseRel, HttpServletRequest request){
+        SelectionStage stage = studentService.queryActiveSelectionStage();
+        if(stage == null){
+            return Result.createFail("当前不在选课时间段内，无法退课");
+        }
+        Student user = (Student) request.getSession().getAttribute("user");
+        studentCourseRel.setStudentId(user.getId());
+        studentCourseRel.setType("1");
+        boolean b = studentService.dropStudentCourse(studentCourseRel);
+        if(!b){
+            return Result.createFail("退课失败，请稍后重试");
+        }
+        return Result.createSuccess("退课成功");
+    }
+
     //跳转已选课程
     @RequestMapping("selectedCourse")
     public ModelAndView selectedCourse(HttpServletRequest request){
