@@ -9,10 +9,6 @@ gs_om -t start;
 登录openGauss数据库服务
 gsql -d postgres -p 26000 -r
 
-mvn clean -f "c:\Users\gongyi\Desktop\stu-manage\graduation-design-master\pom.xml"
-mvn package -f "c:\Users\gongyi\Desktop\stu-manage\graduation-design-master\pom.xml"
-java -jar graduation-design-master/target/springboot-student.jar
-http://localhost:8088/
 # stu-manage
 
 #### 介绍
