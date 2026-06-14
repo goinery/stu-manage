@@ -49,32 +49,37 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public boolean updateStudentCourseRel(StudentCourseRel studentCourseRel) {
-        //查询当前时间是否可以选择课程
-        Course course = studentMapper.selectCourseByPeriodTime(studentCourseRel.getCourseId(),new Date());
-        if(course == null){
-            return false;
-        }
-        //查询可选人数和已选人数
+        //查询课程信息（含可选/已选人数、任课教师、上课时间）
         Course course1 = studentMapper.selectCourseById(studentCourseRel.getCourseId());
-        if(course1.getOptional() == course1.getSelected()){
+        if(course1 == null){
             return false;
         }
+        //选课时间由 selection_stage 统一控制（见 Controller），此处不再校验逐课的旧时间窗
         boolean b = false;
         Course course2 = new Course();
         course2.setId(studentCourseRel.getCourseId());
         if("0".equals(studentCourseRel.getType())){
+            //校验剩余容量
+            if(course1.getSelected() >= course1.getOptional()){
+                return false;
+            }
             studentCourseRel.setId(UUID.randomUUID().toString().replaceAll("-",""));
             studentCourseRel.setState("0");
+            //填充 NOT NULL 字段：评分教师=任课教师，尚未评分
+            studentCourseRel.setTeacherId(course1.getTeacherId());
+            studentCourseRel.setIsQualified("0");
+            studentCourseRel.setCreditsRemark(" ");
             b = studentMapper.insertStudentCourseRel(studentCourseRel);
             course2.setUseNumber(1);
-            //添加已选人说
-
+            //添加已选人数
         }else{
             b = studentMapper.deleteStudentCourseRel(studentCourseRel);
             //删除已选人数
             course2.setUseNumber(-1);
         }
-        studentMapper.updateCourse(course2);
+        if(b){
+            studentMapper.updateCourse(course2);
+        }
         return b;
     }
 

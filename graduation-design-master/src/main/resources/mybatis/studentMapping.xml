@@ -74,7 +74,7 @@
     </select>
 
     <select id="selectCourseById" resultType="com.kzl.entity.Course">
-        SELECT id, optional, selected
+        SELECT id, courseName, teacherId, classDate, optional, selected
         FROM course
         WHERE id=#{courseId}
     </select>
