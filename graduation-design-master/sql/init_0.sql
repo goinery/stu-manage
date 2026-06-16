@@ -1,31 +1,15 @@
-graduation-design-master\sql
-此目录用于帮助我在数据库一次性初始化数据，需要考虑数据残留问题，在修改前删除表再添加数据
-在lab.md中的数据基础上按修改的实际情况设计数据库
-
-以下是lab.md的原始样例数据，在此基础修改
-# 3 openGauss数据库准备
-#### 步骤 1 连接服务器
-使用SSH工具（比如：PuTTY等）从本地电脑通过配置ECS服务器IP地址（如：192.168.1.73）来连接服务器，并使用root用户及对应密码(如：openEuler)来登录。
-如果ECS服务器上还没有安装openGauss数据库，请参考《01-1 在ECS上安装部署openGauss数据库指导手册》进行安装。
-
-#### 步骤 2 切换至数据库安装用户
-su - omm
-gs_om -t status --detail
-gs_om -t start;
-gsql -d postgres -p 26000 -r
-gsql -d oasys -p 26000 -r
-java -jar graduation-design-master/target/springboot-student.jar
-接着在oasys数据库中完成相关数据库对象创建及数据初始化。
-
-查看所有表
-\dt;
-
-# 4 数据库对象创建
-## 4.1 College学院信息表创建
-```sql
---步骤1删表
+DROP TABLE IF EXISTS public.role_menu_rel;
+DROP TABLE IF EXISTS public.student_course_rel;
+DROP TABLE IF EXISTS public.student;
+DROP TABLE IF EXISTS public.teacher;
+DROP TABLE IF EXISTS public.menu;
+DROP TABLE IF EXISTS public.manage_user;
+DROP TABLE IF EXISTS public.information;
+DROP TABLE IF EXISTS public.course;
+DROP TABLE IF EXISTS public.course_academic_year;
 DROP TABLE IF EXISTS public.college;
---步骤2建表
+DROP TABLE IF EXISTS public.role;
+
 CREATE TABLE public.college (
   id varchar(32) PRIMARY KEY NOT NULL,
   name varchar(64) NOT NULL,
@@ -35,14 +19,9 @@ CREATE TABLE public.college (
   createDate SMALLDATETIME NOT NULL,
   updateDate SMALLDATETIME NOT NULL
 ) WITH (ORIENTATION = ROW);
---步骤3插入数据
 INSERT INTO public.college VALUES ('1', '软件工程学院', 0, 0, '1', '2020-07-23 17:43:30', '2020-07-30 10:38:47');
 INSERT INTO public.college VALUES ('2', '计算机技术与科学学院', 11, 11, '0', '2020-07-23 17:44:00', '2020-10-12 15:12:24');
-```
 
-## 4.2 Course课程信息表创建
-```sql
-DROP TABLE IF EXISTS public.course;
 CREATE TABLE public.course  (
   id varchar(32) PRIMARY KEY NOT NULL,
   courseName varchar(64) NOT NULL,
@@ -60,17 +39,12 @@ CREATE TABLE public.course  (
   selected INTEGER NOT NULL,
   remark text NULL
 ) WITH (ORIENTATION = ROW);
---插入数据
 INSERT INTO public.course VALUES ('1', '计算机网络基础', '1', '1', '6号主教学楼 202<br/>\r\n6号主教学楼 202', '星期三 下午第二节课 8-11周<br>星期三 下午第二节课 13-14周', '2020-08-03 17:44:59', '2020-08-03 17:45:02', 5.0, '2020上半学年', '2020-08-08 17:44:52', 1, 1, 1, '1、页面上方的【选课中心】，然后点击左侧的【推荐选课】...');
 INSERT INTO public.course VALUES ('2', '计算机网络基础2', '1', '1', '6号主教学楼 202<br/>\r\n6号主教学楼 202', '星期三 下午第二节课 8-11周<br>星期三 下午第二节课 13-14周', '2020-08-03 17:45:26', '2020-08-03 17:45:29', 5.0, '2020上半学年', '2020-08-03 17:45:31', 32, 1, 12, '1、页面上方的【选课中心】...');
 INSERT INTO public.course VALUES ('7508a2b591ae4499b3f8d17bc1d6e92a', '计算机网络基础3', '2', '1', '6号主教学楼 202<br/>\r\n6号主教学楼 202', '星期三 下午第二节课 8-11周<br>星期三 下午第二节课 13-14周', '2020-08-03 00:00:00', '2020-08-03 00:00:00', 4.0, '2020上半学年', '2020-08-03 00:00:00', 68, 0, 0, '1、页面上方的【选课中心】...');
 INSERT INTO public.course VALUES ('8beb093dd8b749e199ff18da3ae2fe20', '计算机网络基础4', '2', '1', '6号主教学楼 202<br/>\r\n6号主教学楼 202', '星期三 下午第二节课 8-11周<br>星期三 下午第二节课 13-14周', '2020-08-03 00:00:00', '2020-08-03 00:00:00', 5.0, '2020上半学年', '2020-08-03 00:00:00', 123, 0, 0, '1、页面上方的【选课中心】...');
 INSERT INTO public.course VALUES ('d006bccea7654b26b33be71ee5c3197a', '计算机网络基础5', '2', '1', '6号主教学楼 202<br/>\r\n6号主教学楼 202', '星期三 下午第二节课 8-11周<br>星期三 下午第二节课 13-14周', '2020-07-04 00:00:00', '2020-08-04 00:00:00', 5.0, '2020上半学年', '2020-08-04 00:00:00', 115, 0, 0, '1、页面上方的【选课中心】...');
-```
 
-## 4.3 course_academic_year课程学年表创建
-```sql
-DROP TABLE IF EXISTS public.course_academic_year;
 CREATE TABLE public.course_academic_year  (
   id varchar(32) PRIMARY KEY NOT NULL,
   academicYear varchar(20) NOT NULL,
@@ -81,11 +55,7 @@ INSERT INTO public.course_academic_year VALUES ('2', '2020下半学年', '0');
 INSERT INTO public.course_academic_year VALUES ('3', '2019上半学年', '0');
 INSERT INTO public.course_academic_year VALUES ('4', '2019下半学年', '0');
 INSERT INTO public.course_academic_year VALUES ('75ee03db4e09408198f021602baf0ca2', '2021上半学年', '0');
-```
 
-## 4.4 information公告信息表创建
-```sql
-DROP TABLE IF EXISTS public.information;
 CREATE TABLE public.information  (
   id varchar(32) PRIMARY KEY NOT NULL,
   title varchar(320) NOT NULL,
@@ -96,11 +66,7 @@ CREATE TABLE public.information  (
 INSERT INTO public.information VALUES ('1', '关于本学期校级任选课相关事宜安排的通知', '各学院及相关单位:<br>\r\n根据学校教学安排，本学期全校任选课定于6月20日（星期五） 正式开课...', '2020-07-18 23:53:18', '1');
 INSERT INTO public.information VALUES ('2', '关于本学期校级任选课相关事宜安排的通知', '各学院及相关单位:<br>\r\n根据学校教学安排...', '2020-07-24 09:47:29', '2');
 INSERT INTO public.information VALUES ('3', '关于本学期校级任选课相关事宜安排的通知', '各学院及相关单位:<br>\r\n根据学校教学安排...', '2020-07-24 09:48:09', '3');
-```
 
-## 4.5 manage_user管理员用户表创建
-```sql
-DROP TABLE IF EXISTS public.manage_user;
 CREATE TABLE public.manage_user  (
   id varchar(32) PRIMARY KEY NOT NULL,
   loginName varchar(32) NOT NULL,
@@ -111,11 +77,7 @@ CREATE TABLE public.manage_user  (
   state varchar(1) NOT NULL
 ) WITH (ORIENTATION = ROW);
 INSERT INTO public.manage_user VALUES ('1', 'admin', 'admin', 'admin', '1', '2020-07-18 23:12:53', '1');
-```
 
-## 4.6 menu菜单表创建
-```sql
-DROP TABLE IF EXISTS public.menu;
 CREATE TABLE public.menu  (
   id varchar(32) PRIMARY KEY NOT NULL,
   name varchar(64) NOT NULL,
@@ -128,13 +90,8 @@ CREATE TABLE public.menu  (
   state varchar(1) NOT NULL,
   remark varchar(2555) NULL DEFAULT NULL
 ) WITH (ORIENTATION = ROW);
---菜单插入数据省略多条，示例一条
 INSERT INTO public.menu VALUES ('1', '首页', '0', '2020-07-18 23:44:05', '1', '2020-08-18 17:42:18', 1, '/manage/index', '1', '首页数据展示');
-```
 
-## 4.7 role角色表创建
-```sql
-DROP TABLE IF EXISTS public.role;
 CREATE TABLE public.role  (
   id varchar(32) PRIMARY KEY NOT NULL,
   name varchar(64) NOT NULL,
@@ -145,22 +102,13 @@ INSERT INTO public.role VALUES ('1', '系统管理', '2020-07-18 23:14:08', '1')
 INSERT INTO public.role VALUES ('2', '教师', '2020-07-18 23:15:04', '1');
 INSERT INTO public.role VALUES ('3', '学生', '2020-07-18 23:15:00', '1');
 INSERT INTO public.role VALUES ('f1eae1546dbb4b90bb6af3349aacd5a1', '测试角色', '2020-07-31 18:17:56', '1');
-```
 
-## 4.8 role_menu_rel角色菜单关联表创建
-```sql
-DROP TABLE IF EXISTS public.role_menu_rel;
 CREATE TABLE public.role_menu_rel  (
   id varchar(32) PRIMARY KEY NOT NULL,
   roleId varchar(32),
   menuId varchar(32) NOT NULL
 ) WITH (ORIENTATION = ROW);
---插入多条关联数据，省略
-```
 
-## 4.9 Student表学生用户表创建
-```sql
-DROP TABLE IF EXISTS public.student;
 CREATE TABLE public.student  (
   id varchar(32) PRIMARY KEY NOT NULL,
   studentNumber varchar(64) NOT NULL,
@@ -177,11 +125,7 @@ INSERT INTO public.student VALUES ('4b34934c56df4bbdae336a334973e7fc', '74101142
 INSERT INTO public.student VALUES ('8c367b8b7b6b4f098dd85efc26969daf', '741011421564112', '涂飞', '123456', '15241254520', '654125478962@qq.com', '3', '1', '2020-07-17 17:29:56', '1');
 INSERT INTO public.student VALUES ('af82b7bdba124a4e80e17827fad6647d', '741011421564113', '姜太虚', '123456', '13378974152', '49843214567@qq.com', '3', '2', '2020-07-17 17:26:20', '1');
 INSERT INTO public.student VALUES ('f1283ca0cb534f979bd1e2a73077b45e', '741011421564114', '段德', '12345', '18345789870', '74851426348@qq.com', '3', '1', '2020-07-17 11:58:10', '1');
-```
 
-## 4.10 student_course_rel学生课程关联表创建
-```sql
-DROP TABLE IF EXISTS public.student_course_rel;
 CREATE TABLE public.student_course_rel  (
   id varchar(32) PRIMARY KEY NOT NULL,
   studentId varchar(32) NOT NULL,
@@ -194,11 +138,7 @@ CREATE TABLE public.student_course_rel  (
 INSERT INTO public.student_course_rel VALUES ('2e8b63dddcf54b0383b317e1a136e868', '4b34934c56df4bbdae336a334973e7fc', '2', NULL, NULL, NULL, '0');
 INSERT INTO public.student_course_rel VALUES ('e1c87ea078c44ba5a0ba4362fb196021', '8c367b8b7b6b4f098dd85efc26969daf', '2', NULL, NULL, NULL, '0');
 INSERT INTO public.student_course_rel VALUES ('e94080073128488ea889278d1174b723', '4b34934c56df4bbdae336a334973e7fc', '1', NULL, NULL, NULL, '0');
-```
 
-## 4.11 teacher教师信息表创建
-```sql
-DROP TABLE IF EXISTS public.teacher;
 CREATE TABLE public.teacher  (
   id varchar(32)  PRIMARY KEY NOT NULL,
   loginName varchar(64) NOT NULL,
@@ -213,4 +153,3 @@ CREATE TABLE public.teacher  (
 ) WITH (ORIENTATION = ROW);
 INSERT INTO public.teacher VALUES ('1', '叶凡', '叶凡', '123456', '18385147410', '18414523285@qq.com', '2', '1', '2020-07-17 11:51:24', '1');
 INSERT INTO public.teacher VALUES ('2', '庞博', '庞博', '123456', '15345217450', '45147896741@qq.com', '2', '1', '2020-08-01 15:05:43', '1');
-```
