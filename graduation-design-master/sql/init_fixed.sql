@@ -46,7 +46,7 @@ CREATE TABLE public.menu (
   createId varchar(32) NOT NULL,
   updateDate SMALLDATETIME NOT NULL,
   sort INTEGER NOT NULL,
-  href varchar(64) NOT NULL,
+  href varchar(64) NULL,
   state varchar(1) NOT NULL,
   remark varchar(2555) NULL DEFAULT NULL
 ) WITH (ORIENTATION = ROW);
