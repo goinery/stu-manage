@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.kzl.entity.*;
 import com.kzl.service.ManageService;
 import com.kzl.service.RegisterService;
+import com.kzl.service.StudentService;
 import com.kzl.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -23,6 +24,8 @@ public class ManageController {
     private ManageService manageService;
     @Autowired
     private RegisterService service;
+    @Autowired
+    private StudentService studentService;
 
     @RequestMapping("getLoginData")
     public ModelAndView getLoginData(String id,String loginName,String username,String roleId,String roleName,HttpServletRequest request){
@@ -39,13 +42,49 @@ public class ManageController {
     }
 
     @RequestMapping("index")
-    public String index(HttpServletRequest request){
+    public ModelAndView index(HttpServletRequest request){
         Object user = request.getSession().getAttribute("user");
         List<Menu> menus = (List) request.getSession().getAttribute("menuList");
+        String userType = (String) request.getSession().getAttribute("userType");
         if(user == null || menus == null || menus.size() == 0){
-            return "redirect:/";
+            return new ModelAndView("redirect:/");
         }
-        return "index";
+        //首页菜单(m01)对所有角色都指向本接口，需按角色重新装载公告与统计卡片，
+        //否则点击“首页”后会丢失登录时由 getLoginData 设置的数据。userType 与 roleId 一致(1管理员/2教师/3学生)。
+        ModelAndView modelAndView = new ModelAndView("index");
+        modelAndView.addObject("userType", userType);
+        if(userType != null){
+            modelAndView.addObject("information", manageService.queryInformation(userType));
+        }
+        //当前学年（学生/教师卡片共用）
+        try {
+            CourseAcademicYear courseAcademicYear = studentService.getCourseAcademicYear();
+            if(courseAcademicYear != null){
+                modelAndView.addObject("academicYear", courseAcademicYear.getAcademicYearName());
+            }
+        } catch (Exception e){
+            //无有效学年时模板自行兜底
+        }
+        //学生：已选课程数 + 已获学分
+        if("3".equals(userType) && user instanceof Student){
+            try {
+                List<Course> courses = studentService.selectCourseList(((Student) user).getId());
+                double creditsCount = 0;
+                for(Course course : courses){
+                    creditsCount += course.getCredits();
+                }
+                modelAndView.addObject("courseCount", courses.size());
+                modelAndView.addObject("creditsCount", creditsCount);
+            } catch (Exception e){
+                modelAndView.addObject("courseCount", 0);
+                modelAndView.addObject("creditsCount", 0);
+            }
+        }
+        //教师：所属学院
+        if("2".equals(userType) && user instanceof Teacher){
+            modelAndView.addObject("collegeName", ((Teacher) user).getCollegeName());
+        }
+        return modelAndView;
     }
 
     @RequestMapping("menu")
