@@ -82,4 +82,10 @@ public interface ManageService {
 
     //删除资讯信息
     boolean deleteInformation(String id);
+
+    //查询选课阶段列表
+    List<SelectionStage> querySelectionStageList();
+
+    //修改选课阶段
+    boolean updateSelectionStage(SelectionStage selectionStage);
 }

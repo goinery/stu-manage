@@ -42,6 +42,12 @@ public interface ManageMapper {
 
     boolean updateStudent(Student student);
 
+    //查询选课阶段列表
+    List<SelectionStage> selectSelectionStageList();
+
+    //更新选课阶段（状态与三类选课开关）
+    boolean updateSelectionStage(SelectionStage selectionStage);
+
     List<Menu> selectMenuByRoleId(String roleId);
 
     List<Menu> selectAllMenuList();

@@ -185,8 +185,8 @@ INSERT INTO public.menu VALUES ('m10', '课程列表', 'm02', '2020-07-18 23:44:
 INSERT INTO public.menu VALUES ('m11', '新增课程', 'm02', '2020-07-18 23:44:05', '1', '2025-02-15 17:42:18', 2, '/course/forwardAdd', '1', '新增课程页面');
 INSERT INTO public.menu VALUES ('m12', '学年管理', 'm02', '2020-07-18 23:44:05', '1', '2025-02-15 17:42:18', 3, '/course/courseAcademicYear', '1', '学年管理');
 INSERT INTO public.menu VALUES ('m13', '选课管理', 'm02', '2020-07-18 23:44:05', '1', '2025-02-15 17:42:18', 4, '/manage/selectionStage', '1', '选课阶段管理');
-INSERT INTO public.menu VALUES ('m14', '学生管理', 'm03', '2020-07-18 23:44:05', '1', '2025-02-15 17:42:18', 1, '/manage/studentList', '1', '学生信息管理');
-INSERT INTO public.menu VALUES ('m15', '教师管理', 'm03', '2020-07-18 23:44:05', '1', '2025-02-15 17:42:18', 2, '/manage/teacherList', '1', '教师信息管理');
+INSERT INTO public.menu VALUES ('m14', '学生管理', 'm03', '2020-07-18 23:44:05', '1', '2025-02-15 17:42:18', 1, '/manage/student', '1', '学生信息管理');
+INSERT INTO public.menu VALUES ('m15', '教师管理', 'm03', '2020-07-18 23:44:05', '1', '2025-02-15 17:42:18', 2, '/manage/teacher', '1', '教师信息管理');
 INSERT INTO public.menu VALUES ('m16', '学院管理', 'm03', '2020-07-18 23:44:05', '1', '2025-02-15 17:42:18', 3, '/manage/college', '1', '学院信息管理');
 INSERT INTO public.menu VALUES ('m17', '公告列表', 'm04', '2020-07-18 23:44:05', '1', '2025-02-15 17:42:18', 1, '/manage/information', '1', '公告列表管理');
 INSERT INTO public.menu VALUES ('m18', '菜单管理', 'm05', '2020-07-18 23:44:05', '1', '2025-02-15 17:42:18', 1, '/manage/menu', '1', '菜单树管理');

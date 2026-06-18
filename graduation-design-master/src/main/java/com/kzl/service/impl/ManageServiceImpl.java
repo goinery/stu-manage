@@ -259,4 +259,14 @@ public class ManageServiceImpl implements ManageService {
     public boolean deleteInformation(String id) {
         return manageMapper.deleteInformation(id);
     }
+
+    @Override
+    public List<SelectionStage> querySelectionStageList() {
+        return manageMapper.selectSelectionStageList();
+    }
+
+    @Override
+    public boolean updateSelectionStage(SelectionStage selectionStage) {
+        return manageMapper.updateSelectionStage(selectionStage);
+    }
 }

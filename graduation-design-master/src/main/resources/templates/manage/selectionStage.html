@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>选课管理</title>
+    <link href="../../static/css/index.css" type="text/css" rel="stylesheet"/>
+    <link rel="stylesheet" href="../../static/layui/css/layui.css"/>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <!--头部导航栏-->
+    <div id="head" th:include="common/header :: common_head(user=${session.user})"></div>
+    <!--左边菜单栏-->
+    <div id="left_column" th:include="common/left_column :: left_column(menuList=${session.menuList})"></div>
+    <!-- 内容主体区域 -->
+    <div class="layui-body">
+        <div style="padding: 15px;">
+            <div class="teacher_column">
+                <div class="teacher_top">
+                    选课管理（选课阶段控制） <hr>
+                </div>
+                <blockquote class="layui-elem-quote" style="font-size:13px;color:#666;">
+                    控制各学年选课阶段的启用状态以及“推荐选课 / 方案内选课 / 方案外选课”的开放情况。学生端选课中心依据当前生效且在时间范围内、stageOrder 最小的阶段进行校验。
+                </blockquote>
+                <div class="teacher_content">
+                    <blockquote class="layui-elem-quote">
+                        <table class="layui-hide" id="stageTable" lay-filter="stageTable"></table>
+                    </blockquote>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../../static/layui/layui.all.js"></script>
+<!-- th:inline="none"：避免 Thymeleaf 把 layui 的双方括号列定义当作内联表达式吞掉 -->
+<script th:inline="none">
+    layui.use(['table', 'layer'], function(){
+        var layer = layui.layer,
+            table = layui.table,
+            $ = layui.jquery;
+
+        function flagBtn(val, event, onText, offText){
+            if(val === '1'){
+                return '<button type="button" class="layui-btn layui-btn-sm" lay-event="' + event + '">' + onText + '</button>';
+            }
+            return '<button type="button" class="layui-btn layui-btn-sm layui-btn-danger" lay-event="' + event + '">' + offText + '</button>';
+        }
+
+        var tableIns = table.render({
+            elem: '#stageTable',
+            url: '/manage/selectionStageList',
+            cols: [
+                [
+                    {field:'academicYear', title:'学年', width:140},
+                    {field:'stageName', title:'阶段名称', width:200},
+                    {field:'stageOrder', title:'顺序', width:80, align:'center'},
+                    {field:'startDate', title:'开始时间', width:170},
+                    {field:'endDate', title:'结束时间', width:170},
+                    {title:'状态', align:'center', width:100, templet: function(d){ return flagBtn(d.state, 'toggleState', '启用中', '已停用'); }},
+                    {title:'推荐选课', align:'center', width:110, templet: function(d){ return flagBtn(d.allowRecommend, 'toggleRecommend', '开放', '关闭'); }},
+                    {title:'方案内选课', align:'center', width:120, templet: function(d){ return flagBtn(d.allowPlan, 'togglePlan', '开放', '关闭'); }},
+                    {title:'方案外选课', align:'center', width:120, templet: function(d){ return flagBtn(d.allowOutside, 'toggleOutside', '开放', '关闭'); }}
+                ]
+            ],
+            id: 'stageReload'
+        });
+
+        var eventField = {
+            toggleState: 'state',
+            toggleRecommend: 'allowRecommend',
+            togglePlan: 'allowPlan',
+            toggleOutside: 'allowOutside'
+        };
+
+        table.on('tool(stageTable)', function(obj){
+            var field = eventField[obj.event];
+            if(!field) return;
+            var d = obj.data;
+            var payload = {
+                id: d.id,
+                state: d.state,
+                allowRecommend: d.allowRecommend,
+                allowPlan: d.allowPlan,
+                allowOutside: d.allowOutside
+            };
+            payload[field] = (d[field] === '1') ? '0' : '1';
+            $.ajax({
+                url: '/manage/updateSelectionStage',
+                method: 'post',
+                data: JSON.stringify(payload),
+                contentType: 'application/json;charset=utf-8',
+                dataType: 'text',
+                success: function(res){
+                    res = JSON.parse(res);
+                    layer.msg(res.code === 200 ? (res.data || '更新成功') : (res.message || '更新失败'));
+                    if(res.code === 200){
+                        tableIns.reload();
+                    }
+                },
+                error: function(){
+                    layer.msg('服务器连接失败');
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

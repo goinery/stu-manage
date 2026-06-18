@@ -186,4 +186,22 @@
     <delete id="deleteInformation">
         DELETE FROM information WHERE id = #{id}
     </delete>
+
+    <!-- 查询选课阶段列表 -->
+    <select id="selectSelectionStageList" resultType="com.kzl.entity.SelectionStage">
+        SELECT id, academicYear, stageName, stageOrder, startDate, endDate,
+               allowRecommend, allowPlan, allowOutside, state
+        FROM selection_stage
+        ORDER BY academicYear, stageOrder
+    </select>
+
+    <!-- 更新选课阶段：状态与三类选课开关 -->
+    <update id="updateSelectionStage" parameterType="com.kzl.entity.SelectionStage">
+        UPDATE selection_stage
+        SET state = #{state},
+            allowRecommend = #{allowRecommend},
+            allowPlan = #{allowPlan},
+            allowOutside = #{allowOutside}
+        WHERE id = #{id}
+    </update>
 </mapper>

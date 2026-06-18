@@ -299,6 +299,29 @@ public class ManageController {
         return state?"manage/role":"redirect:/";
     }
 
+    //跳转选课阶段管理页面
+    @RequestMapping("selectionStage")
+    public String selectionStage(HttpServletRequest request){
+        boolean state = judgeUserLoginState(request);
+        return state?"manage/selectionStage":"redirect:/";
+    }
+
+    //查询选课阶段列表
+    @ResponseBody
+    @RequestMapping("selectionStageList")
+    public Result selectionStageList(HttpServletRequest request){
+        List<SelectionStage> stages = manageService.querySelectionStageList();
+        return Result.create(0,"",stages);
+    }
+
+    //修改选课阶段（状态/三类选课开关）
+    @ResponseBody
+    @RequestMapping("updateSelectionStage")
+    public Result updateSelectionStage(@RequestBody SelectionStage selectionStage){
+        boolean b = manageService.updateSelectionStage(selectionStage);
+        return b?Result.createSuccess("选课阶段更新成功"):Result.createFail("选课阶段更新失败");
+    }
+
     //查询菜单列表
     @ResponseBody
     @RequestMapping("getMenuList")
