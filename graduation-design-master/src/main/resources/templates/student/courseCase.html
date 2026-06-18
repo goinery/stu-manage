@@ -63,14 +63,18 @@
 
 <script src="../../static/layui/layui.all.js"></script>
 </body>
+<!-- 仅此处用 Thymeleaf 内联取出当前学生ID；主脚本不能用 th:inline，
+     否则 layui 列定义里的 [[ ... ]] 会被 Thymeleaf 当作内联表达式吞掉，导致整段脚本失效 -->
 <script th:inline="javascript">
+    var studentId = [[${session.user.id}]];
+</script>
+<script th:inline="none">
     layui.use(['table', 'layer', 'element'], function(){
         var layer = layui.layer,
             table = layui.table,
             element = layui.element,
             $ = layui.jquery;
 
-        var studentId = [[${session.user.id}]];
         var currentStage = null;
 
         //获取选课阶段信息
@@ -103,21 +107,6 @@
             var d = new Date(ts);
             return d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0')+'-'+d.getDate().toString().padStart(2,'0')+' '+d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
         }
-
-        //列定义
-        var cols = [[
-            {field:'courseName', title:'课程名称', width:160},
-            {field:'collegeName', title:'学院名称', width:160},
-            {field:'teacherName', title:'授课教师', width:100},
-            {field:'credits', title:'学分', width:70},
-            {field:'classDate', title:'上课时间', width:220},
-            {field:'classPlace', title:'上课地点', width:160},
-            {field:'optional', title:'可选人数', width:90},
-            {field:'selected', title:'已选人数', width:90},
-            {templet: function(d){ return d.optional > d.selected ? '<span style="color:#5FB878">有余额</span>' : '<span style="color:#FF5722">已满</span>'; }, title:'剩余容量', width:90},
-            {templet: detailBtn, title:'课程详情', align:'center', width:100},
-            {templet: null, title:'操作', align:'center', width:120}
-        ]];
 
         //推荐选课表格
         var recommendTable = table.render({
