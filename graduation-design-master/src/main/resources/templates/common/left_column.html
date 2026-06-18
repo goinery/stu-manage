@@ -15,6 +15,26 @@
                 </ul>
             </div>
         </div>
+        <script th:inline="none">
+            (function(){
+                var path = location.pathname;
+                var links = document.querySelectorAll('.layui-nav-tree dd a');
+                for(var i = 0; i < links.length; i++){
+                    var href = links[i].getAttribute('href');
+                    if(!href || href === 'javascript:;') continue;
+                    if(href === path){
+                        var dd = links[i].parentNode;
+                        dd.className += ' layui-this';
+                        var li = dd;
+                        while(li && (!li.className || li.className.indexOf('layui-nav-item') < 0)){
+                            li = li.parentNode;
+                        }
+                        if(li){ li.className += ' layui-nav-itemed'; }
+                        break;
+                    }
+                }
+            })();
+        </script>
     </footer>
 </left_column>
 </html>
