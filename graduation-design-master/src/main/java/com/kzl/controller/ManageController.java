@@ -71,7 +71,7 @@ public class ManageController {
                 List<Course> courses = studentService.selectCourseList(((Student) user).getId());
                 double creditsCount = 0;
                 for(Course course : courses){
-                    creditsCount += course.getCredits();
+                    creditsCount += course.getCredits() == null ? 0 : course.getCredits();
                 }
                 modelAndView.addObject("courseCount", courses.size());
                 modelAndView.addObject("creditsCount", creditsCount);
@@ -357,9 +357,10 @@ public class ManageController {
 
 
     public static boolean judgeUserLoginState(HttpServletRequest request){
-        ManageUser user = (ManageUser) request.getSession().getAttribute("user");
+        Object user = request.getSession().getAttribute("user");
+        String userType = (String) request.getSession().getAttribute("userType");
         List<Menu> menus = (List) request.getSession().getAttribute("menuList");
-        if(user == null || menus == null || menus.size() == 0){
+        if(user == null || !"1".equals(userType) || menus == null || menus.size() == 0){
             return false;
         }
         return true;

@@ -7,6 +7,7 @@ import com.kzl.entity.*;
 import com.kzl.service.ManageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -196,6 +197,7 @@ public class ManageServiceImpl implements ManageService {
     }
 
     @Override
+    @Transactional
     public boolean updateRole(Role role) {
         if(role.getState()!=null){
             role.setState("1".equals(role.getState())?"0":"1");
@@ -216,6 +218,7 @@ public class ManageServiceImpl implements ManageService {
     }
 
     @Override
+    @Transactional
     public boolean addRole(Role role) {
         role.setId(UUID.randomUUID().toString().replaceAll("-",""));
         role.setCreateDate(new Date());

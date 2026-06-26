@@ -10,7 +10,7 @@ import java.util.List;
 @Mapper
 public interface ManageMapper {
 
-    List<Menu> selectFirstMenuByRoleId(String roleId,String parentId);
+    List<Menu> selectFirstMenuByRoleId(@Param("roleId") String roleId, @Param("parentId") String parentId);
 
     Information selectInformationByRoleId(String roleId);
 
