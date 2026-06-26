@@ -53,8 +53,24 @@
     </insert>
 
     <select id="selectCollegeList" resultType="com.alibaba.fastjson.JSONObject">
-        SELECT id,name,teacherNum,studentNum,state,createDate
-        FROM college
+        SELECT c.id AS "id",
+               c.name AS "name",
+               COALESCE(t.teacherNum, 0) AS "teacherNum",
+               COALESCE(s.studentNum, 0) AS "studentNum",
+               c.state AS "state",
+               c.createDate AS "createDate"
+        FROM college c
+        LEFT JOIN (
+            SELECT collegeId, COUNT(1) AS teacherNum
+            FROM teacher
+            GROUP BY collegeId
+        ) t ON t.collegeId = c.id
+        LEFT JOIN (
+            SELECT collegeId, COUNT(1) AS studentNum
+            FROM student
+            GROUP BY collegeId
+        ) s ON s.collegeId = c.id
+        ORDER BY c.createDate
     </select>
 
     <select id="selectInformationList" resultType="com.alibaba.fastjson.JSONObject">
