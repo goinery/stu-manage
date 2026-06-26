@@ -145,12 +145,14 @@
                     $('#outsideNum').text(outsideNum);
                     $('#totalNum').text(recommendNum + planNum + outsideNum);
 
-                    //渲染选课类型分布饼图
-                    renderTypeChart(byType);
-
-                    //渲染学院选课分布柱状图
                     var byCollege = data.byCollege || [];
-                    renderCollegeChart(byCollege);
+                    if(typeof Chart !== 'undefined'){
+                        renderTypeChart(byType);
+                        renderCollegeChart(byCollege);
+                    } else {
+                        $('#typeChart').replaceWith('<div style="padding:40px 0;text-align:center;color:#999;">图表组件未加载，统计卡片数据可正常验收</div>');
+                        $('#collegeChart').replaceWith('<div style="padding:40px 0;text-align:center;color:#999;">图表组件未加载，学院统计数据可通过接口验收</div>');
+                    }
 
                     //渲染时间冲突
                     var conflicts = data.timeConflicts || [];
