@@ -18,6 +18,8 @@ public interface TeacherMapper {
 
     int updateStudentCourseRel(@Param("record") StudentCourseRel studentCourseRel, @Param("teacherId") String teacherId);
 
+    int cancelStudentCourseScore(@Param("id") String id, @Param("teacherId") String teacherId);
+
     List<CourseAcademicYear> selectCourseAcademicYearList();
 
     List<TeacherStatis> selectTeacherStatisList(String teacherId);

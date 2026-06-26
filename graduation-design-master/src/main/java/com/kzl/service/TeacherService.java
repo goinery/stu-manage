@@ -20,6 +20,9 @@ public interface TeacherService {
     //学生成绩评价
     boolean updateStudentScore(StudentCourseRel studentCourseRel, String id);
 
+    //取消学生成绩评价
+    boolean cancelStudentScore(StudentCourseRel studentCourseRel, String id);
+
     //查询选择课程的学生信息
     List<StudentCourseRel> getStudentInCourse(String academicYear, String userId, String studentName, String courseName);
 

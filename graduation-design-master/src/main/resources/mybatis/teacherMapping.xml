@@ -41,6 +41,19 @@
         AND sc.state='0'
     </update>
 
+    <update id="cancelStudentCourseScore">
+        UPDATE student_course_rel sc
+        SET state='0',
+            isQualified='0',
+            teacherId=#{teacherId},
+            creditsRemark=' '
+        FROM course c
+        WHERE sc.courseId = c.id
+        AND sc.id=#{id}
+        AND c.teacherId=#{teacherId}
+        AND sc.state='1'
+    </update>
+
     <select id="selectCourseAcademicYearList" resultType="com.kzl.entity.CourseAcademicYear">
         SELECT id,academicYear,state
         FROM course_academic_year

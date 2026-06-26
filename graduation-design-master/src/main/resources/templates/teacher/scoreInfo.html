@@ -113,7 +113,10 @@
         // 操作列按钮
         function scoreActions(d){
             if(d.state == "1"){
-                return '<span style="color:#999;">已评分</span>';
+                return [
+                    '<span style="color:#999;margin-right:8px;">已评分</span>',
+                    '<button type="button" class="layui-btn layui-btn-sm layui-btn-primary" onclick="cancelScore(&quot;' + d.id + '&quot;)">取消评分</button>'
+                ].join(' ');
             }
             return [
                 '<button type="button" class="layui-btn layui-btn-sm" onclick="markQualified(&quot;' + d.id + '&quot;,&quot;' + d.state + '&quot;,&quot;' + d.teachEndDate + '&quot;)">成绩合格</button>',
@@ -199,6 +202,31 @@
                 error: function(){
                     layer.msg('服务器连接失败，请稍后重试', {icon: 2});
                 }
+            });
+        };
+
+        // 取消评分
+        window.cancelScore = function(id){
+            layer.confirm('确定取消该学生的成绩评分吗?', {icon: 3, title:'取消评分'}, function(index){
+                $.ajax({
+                    url: '/teacher/cancelScore',
+                    method: 'post',
+                    data: JSON.stringify({'id': id}),
+                    contentType: "application/json;charset=utf-8",
+                    dataType: 'json',
+                    success: function(res){
+                        if(res.code == 200){
+                            layer.msg(res.message || '取消评分成功', {icon: 1});
+                            tableIns.reload();
+                        } else {
+                            layer.msg(res.message || '取消评分失败', {icon: 2});
+                        }
+                    },
+                    error: function(){
+                        layer.msg('服务器连接失败，请稍后重试', {icon: 2});
+                    }
+                });
+                layer.close(index);
             });
         };
 

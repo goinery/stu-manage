@@ -136,6 +136,18 @@ public class TeacherController {
         return b?Result.createSuccess("成绩评价成功"):Result.createFail("成绩评价失败：课程未结束、记录不存在或不属于当前教师");
     }
 
+    //取消学生成绩评价
+    @ResponseBody
+    @RequestMapping("cancelScore")
+    public Result cancelScore(@RequestBody StudentCourseRel studentCourseRel, HttpServletRequest request){
+        if(!judgeUserLoginState(request)){
+            return Result.createFail("请先登录");
+        }
+        Teacher user = (Teacher) request.getSession().getAttribute("user");
+        boolean b = teacherService.cancelStudentScore(studentCourseRel,user.getId());
+        return b?Result.createSuccess("取消评分成功"):Result.createFail("取消评分失败：记录不存在、未评分或不属于当前教师");
+    }
+
 
     //跳转选课学生信息页面
     @RequestMapping("selectedCourseStu")

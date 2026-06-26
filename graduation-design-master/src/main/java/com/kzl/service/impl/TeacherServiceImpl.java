@@ -74,6 +74,15 @@ public class TeacherServiceImpl implements TeacherService {
     }
 
     @Override
+    public boolean cancelStudentScore(StudentCourseRel studentCourseRel, String id) {
+        if(studentCourseRel == null || studentCourseRel.getId() == null || studentCourseRel.getId().trim().isEmpty()){
+            return false;
+        }
+        int rows = teacherMapper.cancelStudentCourseScore(studentCourseRel.getId(), id);
+        return rows > 0;
+    }
+
+    @Override
     public List<StudentCourseRel> getStudentInCourse(String academicYear, String userId, String studentName, String courseName) {
         List<StudentCourseRel> studentCourses = teacherMapper.selectStudentListByCourse(academicYear, userId, studentName, courseName);
         return studentCourses;
