@@ -14,18 +14,18 @@ public class Course {
     private String classDate;       //上课时间
     private String startDate;       //报考开始时间
     private String endDate;         //报考结束时间
-    private double credits;         //学分
+    private Double credits;         //学分
     private String academicYear;    //学年
     private String teachEndDate;    //课程结束时间   课程结束之后教师可以对选择这门课程的学生打分
-    private int optional;           //可选人数
-    private int primaryAmount;      //预选人数
-    private int selected;           //选中人数
+    private Integer optional;       //可选人数
+    private Integer primaryAmount;  //预选人数
+    private Integer selected;       //选中人数
     private String remark;          //课程说明
     private String state;           //删除标识
 
     private String collegeName;
     private String teacherName;
     private String type;            //课程是否选择
-    private int useNumber;
+    private Integer useNumber;
 
 }

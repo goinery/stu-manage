@@ -30,7 +30,7 @@ public class CourseController {
     public ModelAndView course(HttpServletRequest request){
         ModelAndView modelAndView = new ModelAndView();
         List<Map> colleges = service.selectCollegeList();
-        boolean state = ManageController.judgeUserLoginState(request);
+        boolean state = judgeManageLoginState(request);
         modelAndView.setViewName(state?"manage/course":"redirect:/");
         modelAndView.addObject("collegeList",colleges);
         return modelAndView;
@@ -42,7 +42,10 @@ public class CourseController {
     public Result courseList(HttpServletRequest request){
         Course course = new Course();
         course.setCourseName(request.getParameter("courseName"));
-        course.setCollegeId(request.getParameter("collegeId"));
+        String collegeId = request.getParameter("collegeId");
+        if(!"0".equals(collegeId)){
+            course.setCollegeId(collegeId);
+        }
         List<Course> courses = courseService.queryCourseList(course);
         return Result.create(0,"",courses);
     }
@@ -50,9 +53,12 @@ public class CourseController {
     //课程修改
     @ResponseBody
     @RequestMapping("updateCourse")
-    public Result updateCourse(@RequestBody Course course){
+    public Result updateCourse(@RequestBody Course course, HttpServletRequest request){
+        if(!judgeManageLoginState(request)){
+            return Result.createFail("请先登录");
+        }
         //判断课程是否结束
-        if(course.getState() == "0"){
+        if("0".equals(course.getState())){
             boolean status = courseService.queryCourseEndDate(course);
             if(status){
                 return Result.createFail("当前课程还没有结束，无法删除");
@@ -64,7 +70,7 @@ public class CourseController {
 
     @RequestMapping("forwardAdd")
     public ModelAndView forwardAdd(HttpServletRequest request){
-        boolean state = ManageController.judgeUserLoginState(request);
+        boolean state = judgeManageLoginState(request);
         ModelAndView modelAndView = new ModelAndView();
         List<Map> colleges = service.selectCollegeList();
         List<Map> teacherList = courseService.selectTeacherList();
@@ -78,15 +84,18 @@ public class CourseController {
 
     @ResponseBody
     @RequestMapping("addCourse")
-    public Result addCourse(@RequestBody Course course){
+    public Result addCourse(@RequestBody Course course, HttpServletRequest request){
+        if(!judgeManageLoginState(request)){
+            return Result.createFail("请先登录");
+        }
         boolean b = courseService.addCourseList(course);
-        return b?Result.createSuccess("添加课程数据成功"):Result.createFail("添加课程数据失败");
+        return b?Result.createSuccess("添加课程数据成功"):Result.createFail("添加课程数据失败，请检查必填项、学分、人数和当前学年");
     }
 
     //跳转学年管理
     @RequestMapping("courseAcademicYear")
     public ModelAndView courseAcademicYear(HttpServletRequest request){
-        boolean state = ManageController.judgeUserLoginState(request);
+        boolean state = judgeManageLoginState(request);
         ModelAndView modelAndView = new ModelAndView();
         if(!state){
             modelAndView.setViewName("redirect:/");
@@ -102,7 +111,10 @@ public class CourseController {
     //修改学年
     @ResponseBody
     @RequestMapping("updateAcademicYears")
-    public Result updateAcademicYears(@RequestBody CourseAcademicYear courseAcademicYear){
+    public Result updateAcademicYears(@RequestBody CourseAcademicYear courseAcademicYear, HttpServletRequest request){
+        if(!judgeManageLoginState(request)){
+            return Result.createFail("请先登录");
+        }
         boolean b = courseService.updateAcademicYears(courseAcademicYear);
         return b?Result.createSuccess("修改学年数据成功"):Result.createFail("修改学年数据失败");
     }
@@ -110,10 +122,20 @@ public class CourseController {
     //添加学年
     @ResponseBody
     @RequestMapping("addAcademicYears")
-    public Result addAcademicYears(@RequestBody CourseAcademicYear courseAcademicYear){
+    public Result addAcademicYears(@RequestBody CourseAcademicYear courseAcademicYear, HttpServletRequest request){
+        if(!judgeManageLoginState(request)){
+            return Result.createFail("请先登录");
+        }
         boolean b = courseService.addAcademicYears(courseAcademicYear);
         return b?Result.createSuccess("添加学年数据成功"):Result.createFail("添加学年数据失败");
     }
 
+
+    private boolean judgeManageLoginState(HttpServletRequest request){
+        Object user = request.getSession().getAttribute("user");
+        String userType = (String) request.getSession().getAttribute("userType");
+        List<Menu> menus = (List) request.getSession().getAttribute("menuList");
+        return user != null && "1".equals(userType) && menus != null && menus.size() > 0;
+    }
 
 }

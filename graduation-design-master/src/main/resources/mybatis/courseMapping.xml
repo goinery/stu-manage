@@ -17,27 +17,20 @@
 
     <update id="updateCourse" parameterType="com.kzl.entity.Course" >
         UPDATE course
-        <trim prefix="set" suffixOverrides=",">
+        <set>
             <if test="courseName != null and courseName!=''">courseName=#{courseName},</if>
-        </trim>
-        <trim prefix="set" suffixOverrides=",">
-            <if test="credits != null and credits!=''">credits=#{credits},</if>
-        </trim>
-        <trim prefix="set" suffixOverrides=",">
-            <if test="optional != null and optional!=''">optional=#{optional},</if>
-        </trim>
-        <trim prefix="set" suffixOverrides=",">
+            <if test="credits != null">credits=#{credits},</if>
+            <if test="optional != null">optional=#{optional},</if>
+            <if test="primaryAmount != null">primaryAmount=#{primaryAmount},</if>
+            <if test="selected != null">selected=#{selected},</if>
             <if test="classPlace != null and classPlace!=''">classPlace=#{classPlace},</if>
-        </trim>
-        <trim prefix="set" suffixOverrides=",">
             <if test="classDate != null and classDate!=''">classDate=#{classDate},</if>
-        </trim>
-        <trim prefix="set" suffixOverrides=",">
+            <if test="teacherId != null and teacherId!=''">teacherId=#{teacherId},</if>
+            <if test="collegeId != null and collegeId!=''">collegeId=#{collegeId},</if>
+            <if test="teachEndDate != null and teachEndDate!=''">teachEndDate=#{teachEndDate},</if>
             <if test="remark != null and remark!=''">remark=#{remark},</if>
-        </trim>
-        <trim prefix="set" suffixOverrides=",">
             <if test="state != null and state!=''">state=#{state},</if>
-        </trim>
+        </set>
         WHERE id=#{id}
     </update>
 

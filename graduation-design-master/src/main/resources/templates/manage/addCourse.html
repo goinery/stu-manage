@@ -177,6 +177,18 @@
             var teachEndDate = $('#teachEndDate').val();
             //课程说明
             var textArea = $('#text-area').val();
+            if(!courseName || collegeId === '0' || teacherId === '0' || !classPlace || !classDate || !credits || !optional || !startDate || !endDate || !teachEndDate){
+                layer.msg('请完整填写课程名称、学院、教师、时间、地点、学分和容量', {icon: 2});
+                return;
+            }
+            if(parseFloat(credits) <= 0){
+                layer.msg('课程学分必须大于0', {icon: 2});
+                return;
+            }
+            if(parseInt(optional, 10) <= 0){
+                layer.msg('可选人数必须大于0', {icon: 2});
+                return;
+            }
             var data = {
                 'courseName': courseName,
                 'collegeId': collegeId,
