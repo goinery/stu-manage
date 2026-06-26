@@ -14,6 +14,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("teacher")
@@ -208,9 +209,16 @@ public class TeacherController {
             List<TeacherStatis> CoutStudent_collage = teacherService.selectTeacherStatisList(user.getId());
             CourseAcademicYear courseAcademicYear = studentService.getCourseAcademicYear();
             List<Course> courses = teacherService.selectCourseList(user.getId(), courseAcademicYear.getAcademicYear());
+            Map collegeOverview = teacherService.queryTeacherCollegeOverview(user.getCollegeId(), courseAcademicYear.getAcademicYear());
+            List<Map> teacherCourseStats = teacherService.queryTeacherCourseSelectionStats(user.getId(), courseAcademicYear.getAcademicYear());
+            List<Map> collegeCourseStats = teacherService.queryCollegeCourseSelectionStats(user.getCollegeId(), courseAcademicYear.getAcademicYear());
             modelAndView.setViewName("teacher/statisticalInfo");
             modelAndView.addObject("TeacherStatis", CoutStudent_collage);
             modelAndView.addObject("courseCount", courses.size());
+            modelAndView.addObject("academicYear", courseAcademicYear.getAcademicYearName());
+            modelAndView.addObject("collegeOverview", collegeOverview);
+            modelAndView.addObject("teacherCourseStats", teacherCourseStats);
+            modelAndView.addObject("collegeCourseStats", collegeCourseStats);
         } else {
             modelAndView.setViewName("redirect:/");
         }

@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface TeacherMapper {
@@ -23,6 +24,12 @@ public interface TeacherMapper {
     List<CourseAcademicYear> selectCourseAcademicYearList();
 
     List<TeacherStatis> selectTeacherStatisList(String teacherId);
+
+    Map selectTeacherCollegeOverview(@Param("collegeId") String collegeId, @Param("academicYear") String academicYear);
+
+    List<Map> selectTeacherCourseSelectionStats(@Param("teacherId") String teacherId, @Param("academicYear") String academicYear);
+
+    List<Map> selectCollegeCourseSelectionStats(@Param("collegeId") String collegeId, @Param("academicYear") String academicYear);
 
     // 根据ID查询教师信息
     Teacher selectTeacherById(String id);

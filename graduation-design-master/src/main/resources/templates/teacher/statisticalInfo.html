@@ -2,67 +2,95 @@
 <html lang="zh"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
-      xmlns="http://www.w3.org/1999/xhtml"
->
+      xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8"/>
-    <title>选课统计</title>
+    <title>教师选课统计</title>
     <link href="../../static/css/index.css" type="text/css" rel="stylesheet"/>
     <link href="../../static/css/course.css" type="text/css" rel="stylesheet"/>
     <link rel="stylesheet" href="../../static/layui/css/layui.css"/>
     <style>
-        .stat-row{display:flex;flex-wrap:wrap;gap:15px;margin-bottom:15px;}
-        .stat-card{flex:1;min-width:200px;text-align:center;background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.1);padding:20px 0;}
-        .stat-card .stat-num{font-size:32px;font-weight:bold;margin:8px 0;}
+        .stat-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:15px;}
+        .stat-card{flex:1 1 160px;min-width:150px;text-align:center;background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.08);padding:16px 8px;border-top:4px solid #1E9FFF;}
+        .stat-card .stat-num{font-size:28px;font-weight:bold;margin:6px 0;color:#1E9FFF;}
         .stat-card .stat-label{font-size:14px;color:#666;}
-        .chart-box{background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.1);padding:15px;margin:10px 0;}
+        .chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:15px;margin-top:15px;}
+        .chart-box{background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.08);padding:15px;min-height:320px;}
+        .chart-box h4{text-align:center;margin-bottom:10px;color:#333;}
+        .stat-list{background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.08);padding:15px;margin-top:15px;}
+        .stat-list-item{display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:10px 0;}
+        .stat-list-item:last-child{border-bottom:0;}
     </style>
 </head>
 <body class="layui-layout-body">
 <div class="layui-layout layui-layout-admin">
-    <!--头部导航栏-->
     <div id="head" th:include="common/header :: common_head(user=${session.user})"></div>
-    <!--左边菜单栏-->
     <div id="left_column" th:include="common/left_column :: left_column(menuList=${session.menuList})"></div>
-    <!-- 内容主体区域 -->
     <div class="layui-body">
-        <div style="padding: 15px;">
+        <div style="padding:15px;">
             <div class="index_cloum course-box">
                 <blockquote class="layui-elem-quote">
-                    选课统计
+                    教师选课统计
+                    <span style="float:right;color:#666;" th:text="${academicYear} ?: '--'">--</span>
                 </blockquote>
 
-                <!-- 统计卡片 -->
                 <div class="stat-row">
-                    <div class="stat-card" style="border-top:4px solid #1E9FFF;">
-                        <div class="stat-label">选课总人数</div>
-                        <div class="stat-num" style="color:#1E9FFF;" id="totalStudents">0</div>
+                    <div class="stat-card" style="border-top-color:#1E9FFF;">
+                        <div class="stat-label">所属学院</div>
+                        <div class="stat-num" style="font-size:20px;" id="collegeName">--</div>
                     </div>
-                    <div class="stat-card" style="border-top:4px solid #FFB800;">
-                        <div class="stat-label">授课课程数</div>
-                        <div class="stat-num" style="color:#FFB800;" id="totalCourses">0</div>
+                    <div class="stat-card" style="border-top-color:#5FB878;">
+                        <div class="stat-label">本学院总人数</div>
+                        <div class="stat-num" style="color:#5FB878;" id="totalStudents">0</div>
                     </div>
-                    <div class="stat-card" style="border-top:4px solid #5FB878;">
-                        <div class="stat-label">涉及学院数</div>
-                        <div class="stat-num" style="color:#5FB878;" id="totalColleges">0</div>
+                    <div class="stat-card" style="border-top-color:#009688;">
+                        <div class="stat-label">已选课学生</div>
+                        <div class="stat-num" style="color:#009688;" id="selectedStudents">0</div>
+                    </div>
+                    <div class="stat-card" style="border-top-color:#FFB800;">
+                        <div class="stat-label">未选课学生</div>
+                        <div class="stat-num" style="color:#FFB800;" id="unselectedStudents">0</div>
+                    </div>
+                    <div class="stat-card" style="border-top-color:#FF5722;">
+                        <div class="stat-label">本学院课程数</div>
+                        <div class="stat-num" style="color:#FF5722;" id="collegeCourseCount">0</div>
+                    </div>
+                    <div class="stat-card" style="border-top-color:#673AB7;">
+                        <div class="stat-label">本学院选课人次</div>
+                        <div class="stat-num" style="color:#673AB7;" id="selectionCount">0</div>
+                    </div>
+                    <div class="stat-card" style="border-top-color:#607D8B;">
+                        <div class="stat-label">平均选课门数</div>
+                        <div class="stat-num" style="color:#607D8B;" id="avgCoursePerStudent">0</div>
+                    </div>
+                    <div class="stat-card" style="border-top-color:#9C27B0;">
+                        <div class="stat-label">我的授课课程</div>
+                        <div class="stat-num" style="color:#9C27B0;" th:text="${courseCount} ?: 0">0</div>
                     </div>
                 </div>
 
-                <!-- 按学院统计 -->
-                <blockquote class="layui-elem-quote" style="margin-top:15px;">
-                    各学院选课人数统计
-                </blockquote>
-                <blockquote class="layui-elem-quote course-column count-box" th:each="ths:${TeacherStatis}">
-                    <div>学院: <span class="collage_num" th:text="${ths.name}" style="font-weight:bold;color:#1E9FFF;"></span></div>
-                    <hr>
-                    <div class="count-tip">已选课程人数:<span class="count_num" th:text="${ths.count}"></span></div>
-                    <div class="clear"></div>
-                </blockquote>
+                <div class="chart-grid">
+                    <div class="chart-box">
+                        <h4>本学院学生选课状态</h4>
+                        <canvas id="studentStatusChart" width="360" height="260"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h4>我的课程选课人数</h4>
+                        <canvas id="teacherCourseChart" width="360" height="260"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h4>本学院课程热度 Top 10</h4>
+                        <canvas id="collegeCourseChart" width="360" height="260"></canvas>
+                    </div>
+                </div>
 
-                <!-- 图表区域 -->
-                <div class="chart-box">
-                    <h4 style="text-align:center;margin-bottom:10px;">各学院选课人数分布</h4>
-                    <canvas id="collegeChart" width="600" height="300" style="display:block;margin:0 auto;"></canvas>
+                <div class="stat-list">
+                    <h4 style="margin-bottom:8px;">我的课程涉及学院统计</h4>
+                    <div th:if="${TeacherStatis == null or #lists.isEmpty(TeacherStatis)}" style="color:#999;text-align:center;padding:15px;">暂无统计数据</div>
+                    <div class="stat-list-item" th:each="ths:${TeacherStatis}">
+                        <span th:text="${ths.name}">学院</span>
+                        <strong><span th:text="${ths.count}">0</span> 人次</strong>
+                    </div>
                 </div>
             </div>
         </div>
@@ -73,54 +101,84 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script th:inline="javascript">
     layui.use(['element'], function(){
-        var element = layui.element;
+        var overview = [[${collegeOverview}]] || {};
+        var teacherCourseStats = [[${teacherCourseStats}]] || [];
+        var collegeCourseStats = [[${collegeCourseStats}]] || [];
 
-        var statisData = [[${TeacherStatis}]];
-        var totalStudents = 0;
-        var totalColleges = statisData.length;
-        var labels = [];
-        var values = [];
-        for(var i = 0; i < statisData.length; i++){
-            var count = parseInt(statisData[i].count) || 0;
-            totalStudents += count;
-            labels.push(statisData[i].name);
-            values.push(count);
+        setText('collegeName', overview.collegeName || '--');
+        setText('totalStudents', overview.totalStudents || 0);
+        setText('selectedStudents', overview.selectedStudents || 0);
+        setText('unselectedStudents', overview.unselectedStudents || 0);
+        setText('collegeCourseCount', overview.collegeCourseCount || 0);
+        setText('selectionCount', overview.selectionCount || 0);
+        setText('avgCoursePerStudent', overview.avgCoursePerStudent || 0);
+
+        if(typeof Chart === 'undefined'){
+            replaceChart('studentStatusChart', '图表组件未加载，本学院学生选课状态可通过统计卡片验收');
+            replaceChart('teacherCourseChart', '图表组件未加载，我的课程选课人数可通过列表数据验收');
+            replaceChart('collegeCourseChart', '图表组件未加载，本学院课程热度可通过统计卡片验收');
+            return;
         }
-        document.getElementById('totalStudents').textContent = totalStudents;
-        document.getElementById('totalColleges').textContent = totalColleges;
 
-        var courseCount = [[${courseCount}]] || 0;
-        document.getElementById('totalCourses').textContent = courseCount;
+        renderDoughnut('studentStatusChart',
+            ['已选课学生', '未选课学生'],
+            [numberValue(overview.selectedStudents), numberValue(overview.unselectedStudents)],
+            ['#009688', '#FFB800']);
+        renderBar('teacherCourseChart', teacherCourseStats, 'courseName', 'selectedCount', '#1E9FFF', '选课人数');
+        renderBar('collegeCourseChart', collegeCourseStats, 'courseName', 'selectedCount', '#673AB7', '选课人数');
 
-        if(labels.length > 0 && typeof Chart !== 'undefined'){
-            var ctx = document.getElementById('collegeChart').getContext('2d');
+        function setText(id, value){
+            var node = document.getElementById(id);
+            if(node){ node.textContent = value; }
+        }
+
+        function numberValue(value){
+            return parseFloat(value) || 0;
+        }
+
+        function renderDoughnut(id, labels, values, colors){
+            var ctx = document.getElementById(id).getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#fff'}]
+                },
+                options: {responsive:false, plugins:{legend:{position:'bottom'}}}
+            });
+        }
+
+        function renderBar(id, rows, labelKey, valueKey, color, label){
+            var labels = [];
+            var values = [];
+            for(var i = 0; i < rows.length; i++){
+                labels.push(rows[i][labelKey] || '未命名');
+                values.push(parseInt(rows[i][valueKey]) || 0);
+            }
+            if(labels.length === 0){
+                labels = ['暂无数据'];
+                values = [0];
+            }
+            var ctx = document.getElementById(id).getContext('2d');
             new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: labels,
-                    datasets: [{
-                        label: '选课人数',
-                        data: values,
-                        backgroundColor: ['#1E9FFF', '#FFB800', '#5FB878', '#FF5722', '#9C27B0'],
-                        borderRadius: 4
-                    }]
+                    datasets: [{label: label, data: values, backgroundColor: color, borderRadius: 4}]
                 },
                 options: {
-                    responsive: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { stepSize: 1 }
-                        }
-                    },
-                    plugins: {
-                        legend: { display: false }
-                    }
+                    responsive:false,
+                    scales:{y:{beginAtZero:true,ticks:{stepSize:1}}},
+                    plugins:{legend:{display:false}}
                 }
             });
-        } else if(typeof Chart === 'undefined'){
-            var chartBox = document.getElementById('collegeChart');
-            chartBox.outerHTML = '<div style="padding:40px 0;text-align:center;color:#999;">图表组件未加载，各学院统计列表可正常验收</div>';
+        }
+
+        function replaceChart(id, message){
+            var chart = document.getElementById(id);
+            if(chart){
+                chart.outerHTML = '<div style="padding:80px 0;text-align:center;color:#999;">' + message + '</div>';
+            }
         }
     });
 </script>

@@ -3,6 +3,7 @@ package com.kzl.service;
 import com.kzl.entity.*;
 
 import java.util.List;
+import java.util.Map;
 
 public interface TeacherService {
     List<Menu> queryUserRoleMenu(String roleId);
@@ -33,6 +34,12 @@ public interface TeacherService {
     List<CourseAcademicYear> selectCourseYearList(String courseAcademicYearId);
 
     List<TeacherStatis> selectTeacherStatisList(String teacherId);
+
+    Map queryTeacherCollegeOverview(String collegeId, String academicYear);
+
+    List<Map> queryTeacherCourseSelectionStats(String teacherId, String academicYear);
+
+    List<Map> queryCollegeCourseSelectionStats(String collegeId, String academicYear);
 
     //根据ID查询教师信息
     Teacher queryTeacherById(String id);

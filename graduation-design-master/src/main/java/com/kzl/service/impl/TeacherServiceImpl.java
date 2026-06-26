@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class TeacherServiceImpl implements TeacherService {
@@ -111,6 +112,21 @@ public class TeacherServiceImpl implements TeacherService {
         List<TeacherStatis> teacherStatiss = teacherMapper.selectTeacherStatisList(teacherId);
         return teacherStatiss;
  }
+
+    @Override
+    public Map queryTeacherCollegeOverview(String collegeId, String academicYear) {
+        return teacherMapper.selectTeacherCollegeOverview(collegeId, academicYear);
+    }
+
+    @Override
+    public List<Map> queryTeacherCourseSelectionStats(String teacherId, String academicYear) {
+        return teacherMapper.selectTeacherCourseSelectionStats(teacherId, academicYear);
+    }
+
+    @Override
+    public List<Map> queryCollegeCourseSelectionStats(String collegeId, String academicYear) {
+        return teacherMapper.selectCollegeCourseSelectionStats(collegeId, academicYear);
+    }
 
     @Override
     public Teacher queryTeacherById(String id) {

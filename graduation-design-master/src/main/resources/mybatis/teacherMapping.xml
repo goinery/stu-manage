@@ -68,6 +68,57 @@
         WHERE c.teacherId=#{teacherId}  GROUP BY name
  </select>
 
+    <select id="selectTeacherCollegeOverview" resultType="java.util.HashMap">
+        SELECT co.name AS "collegeName",
+               COUNT(DISTINCT s.id) AS "totalStudents",
+               COUNT(DISTINCT CASE WHEN c.id IS NOT NULL THEN s.id ELSE NULL END) AS "selectedStudents",
+               COUNT(DISTINCT s.id) - COUNT(DISTINCT CASE WHEN c.id IS NOT NULL THEN s.id ELSE NULL END) AS "unselectedStudents",
+               (
+                   SELECT COUNT(1)
+                   FROM course c2
+                   WHERE c2.collegeId = #{collegeId}
+                   AND c2.academicYear = #{academicYear}
+                   AND c2.state = '1'
+               ) AS "collegeCourseCount",
+               COUNT(c.id) AS "selectionCount",
+               COALESCE(ROUND(CAST(COUNT(c.id) AS NUMERIC) / NULLIF(COUNT(DISTINCT s.id), 0), 2), 0) AS "avgCoursePerStudent"
+        FROM college co
+        LEFT JOIN student s ON s.collegeId = co.id AND s.state = '1'
+        LEFT JOIN student_course_rel sc ON sc.studentId = s.id
+        LEFT JOIN course c ON c.id = sc.courseId
+                          AND c.academicYear = #{academicYear}
+                          AND c.state = '1'
+        WHERE co.id = #{collegeId}
+        GROUP BY co.id, co.name
+    </select>
+
+    <select id="selectTeacherCourseSelectionStats" resultType="java.util.HashMap">
+        SELECT c.courseName AS "courseName",
+               c.optional AS "optional",
+               COUNT(sc.id) AS "selectedCount"
+        FROM course c
+        LEFT JOIN student_course_rel sc ON sc.courseId = c.id
+        WHERE c.teacherId = #{teacherId}
+        AND c.academicYear = #{academicYear}
+        AND c.state = '1'
+        GROUP BY c.id, c.courseName, c.optional
+        ORDER BY c.courseName
+    </select>
+
+    <select id="selectCollegeCourseSelectionStats" resultType="java.util.HashMap">
+        SELECT c.courseName AS "courseName",
+               c.optional AS "optional",
+               COUNT(sc.id) AS "selectedCount"
+        FROM course c
+        LEFT JOIN student_course_rel sc ON sc.courseId = c.id
+        WHERE c.collegeId = #{collegeId}
+        AND c.academicYear = #{academicYear}
+        AND c.state = '1'
+        GROUP BY c.id, c.courseName, c.optional
+        ORDER BY COUNT(sc.id) DESC, c.courseName
+        LIMIT 10
+    </select>
+
     <!-- 根据ID查询教师信息 -->
     <select id="selectTeacherById" resultType="com.kzl.entity.Teacher">
         SELECT t.id, t.loginName, t.username, t.phone, t.email, t.collegeId, t.createDate, t.roleId, c.name collegeName
