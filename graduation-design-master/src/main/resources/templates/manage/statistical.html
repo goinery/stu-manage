@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>综合统计</title>
+    <link href="../../static/css/index.css" type="text/css" rel="stylesheet"/>
+    <link rel="stylesheet" href="../../static/layui/css/layui.css"/>
+    <style>
+        .stat-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:15px;}
+        .stat-card{flex:1 1 150px;min-width:140px;text-align:center;background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.08);padding:16px 8px;border-top:4px solid #1E9FFF;}
+        .stat-card .stat-num{font-size:28px;font-weight:bold;margin:6px 0;color:#1E9FFF;}
+        .stat-card .stat-label{font-size:14px;color:#666;}
+        .chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:15px;margin-top:15px;}
+        .chart-box{background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.08);padding:15px;min-height:320px;}
+        .chart-box h4{text-align:center;margin-bottom:10px;color:#333;}
+        .top-list{background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.08);padding:15px;margin-top:15px;}
+        .top-list-row{display:grid;grid-template-columns:60px 1fr 120px 90px;border-bottom:1px solid #eee;padding:10px 0;align-items:center;}
+        .top-list-row:last-child{border-bottom:0;}
+        .top-list-head{font-weight:bold;color:#666;}
+    </style>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <div id="head" th:include="common/header :: common_head(user=${session.user})"></div>
+    <div id="left_column" th:include="common/left_column :: left_column(menuList=${session.menuList})"></div>
+    <div class="layui-body">
+        <div style="padding:15px;">
+            <div class="index_cloum">
+                <blockquote class="layui-elem-quote">
+                    综合统计
+                    <span style="float:right;color:#666;" id="academicYear">--</span>
+                </blockquote>
+
+                <div class="stat-row">
+                    <div class="stat-card" style="border-top-color:#1E9FFF;">
+                        <div class="stat-label">学院数</div>
+                        <div class="stat-num" id="collegeCount">0</div>
+                    </div>
+                    <div class="stat-card" style="border-top-color:#5FB878;">
+                        <div class="stat-label">教师数</div>
+                        <div class="stat-num" style="color:#5FB878;" id="teacherCount">0</div>
+                    </div>
+                    <div class="stat-card" style="border-top-color:#009688;">
+                        <div class="stat-label">学生数</div>
+                        <div class="stat-num" style="color:#009688;" id="studentCount">0</div>
+                    </div>
+                    <div class="stat-card" style="border-top-color:#FFB800;">
+                        <div class="stat-label">课程数</div>
+                        <div class="stat-num" style="color:#FFB800;" id="courseCount">0</div>
+                    </div>
+                    <div class="stat-card" style="border-top-color:#673AB7;">
+                        <div class="stat-label">总选课人次</div>
+                        <div class="stat-num" style="color:#673AB7;" id="selectionCount">0</div>
+                    </div>
+                    <div class="stat-card" style="border-top-color:#5FB878;">
+                        <div class="stat-label">已评分人次</div>
+                        <div class="stat-num" style="color:#5FB878;" id="scoredCount">0</div>
+                    </div>
+                    <div class="stat-card" style="border-top-color:#FF5722;">
+                        <div class="stat-label">未评分人次</div>
+                        <div class="stat-num" style="color:#FF5722;" id="unscoredCount">0</div>
+                    </div>
+                </div>
+
+                <div class="chart-grid">
+                    <div class="chart-box">
+                        <h4>学院学生人数分布</h4>
+                        <canvas id="studentCollegeChart" width="360" height="260"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h4>学院选课人次分布</h4>
+                        <canvas id="selectionCollegeChart" width="360" height="260"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h4>选课类型分布</h4>
+                        <canvas id="selectionTypeChart" width="360" height="260"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h4>成绩完成情况</h4>
+                        <canvas id="scoreStatusChart" width="360" height="260"></canvas>
+                    </div>
+                </div>
+
+                <div class="top-list">
+                    <h4 style="margin-bottom:8px;">课程热度 Top 10</h4>
+                    <div class="top-list-row top-list-head">
+                        <span>排名</span>
+                        <span>课程</span>
+                        <span>学院</span>
+                        <span>选课人次</span>
+                    </div>
+                    <div id="courseTopList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script src="../../static/layui/layui.all.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+    layui.use(['layer'], function(){
+        var layer = layui.layer,
+            $ = layui.jquery;
+
+        $.ajax({
+            url: '/manage/statisticalData',
+            method: 'get',
+            dataType: 'json',
+            success: function(res){
+                if(res.code === 200 && res.data){
+                    renderOverview(res.data.overview || {});
+                    renderTopList(res.data.courseTop || []);
+                    if(typeof Chart !== 'undefined'){
+                        renderBar('studentCollegeChart', res.data.studentByCollege || [], 'collegeName', 'studentCount', '#1E9FFF', '学生数');
+                        renderBar('selectionCollegeChart', res.data.selectionByCollege || [], 'collegeName', 'selectionCount', '#673AB7', '选课人次');
+                        renderDoughnut('selectionTypeChart', res.data.selectionByType || [], 'typeName', 'selectionCount',
+                            ['#1E9FFF', '#FFB800', '#FF5722']);
+                        renderDoughnut('scoreStatusChart', res.data.scoreStatus || [], 'statusName', 'count',
+                            ['#5FB878', '#FF5722']);
+                    } else {
+                        replaceChart('studentCollegeChart', '图表组件未加载，学院学生人数可通过统计卡片验收');
+                        replaceChart('selectionCollegeChart', '图表组件未加载，学院选课人次可通过列表数据验收');
+                        replaceChart('selectionTypeChart', '图表组件未加载，选课类型数据可通过接口验收');
+                        replaceChart('scoreStatusChart', '图表组件未加载，成绩状态数据可通过统计卡片验收');
+                    }
+                } else {
+                    layer.msg(res.message || '统计数据加载失败', {icon: 2});
+                }
+            },
+            error: function(){
+                layer.msg('服务器连接失败，请稍后重试', {icon: 2});
+            }
+        });
+
+        function renderOverview(overview){
+            setText('academicYear', overview.academicYear || '--');
+            setText('collegeCount', overview.collegeCount || 0);
+            setText('teacherCount', overview.teacherCount || 0);
+            setText('studentCount', overview.studentCount || 0);
+            setText('courseCount', overview.courseCount || 0);
+            setText('selectionCount', overview.selectionCount || 0);
+            setText('scoredCount', overview.scoredCount || 0);
+            setText('unscoredCount', overview.unscoredCount || 0);
+        }
+
+        function renderTopList(rows){
+            var html = '';
+            for(var i = 0; i < rows.length; i++){
+                html += '<div class="top-list-row">';
+                html += '<span>' + (i + 1) + '</span>';
+                html += '<span>' + escapeHtml(rows[i].courseName || '--') + '</span>';
+                html += '<span>' + escapeHtml(rows[i].collegeName || '--') + '</span>';
+                html += '<strong>' + (parseInt(rows[i].selectionCount) || 0) + '</strong>';
+                html += '</div>';
+            }
+            if(!html){
+                html = '<div style="padding:15px;text-align:center;color:#999;">暂无课程选课数据</div>';
+            }
+            $('#courseTopList').html(html);
+        }
+
+        function renderBar(id, rows, labelKey, valueKey, color, label){
+            var labels = [];
+            var values = [];
+            for(var i = 0; i < rows.length; i++){
+                labels.push(rows[i][labelKey] || '未命名');
+                values.push(parseInt(rows[i][valueKey]) || 0);
+            }
+            if(labels.length === 0){
+                labels = ['暂无数据'];
+                values = [0];
+            }
+            var ctx = document.getElementById(id).getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {labels: labels, datasets: [{label: label, data: values, backgroundColor: color, borderRadius: 4}]},
+                options: {responsive:false, scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}, plugins:{legend:{display:false}}}
+            });
+        }
+
+        function renderDoughnut(id, rows, labelKey, valueKey, colors){
+            var labels = [];
+            var values = [];
+            for(var i = 0; i < rows.length; i++){
+                labels.push(rows[i][labelKey] || '未分类');
+                values.push(parseInt(rows[i][valueKey]) || 0);
+            }
+            if(labels.length === 0){
+                labels = ['暂无数据'];
+                values = [0];
+            }
+            var ctx = document.getElementById(id).getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {labels: labels, datasets: [{data: values, backgroundColor: colors.slice(0, labels.length), borderWidth: 2, borderColor: '#fff'}]},
+                options: {responsive:false, plugins:{legend:{position:'bottom'}}}
+            });
+        }
+
+        function setText(id, value){
+            var node = document.getElementById(id);
+            if(node){ node.textContent = value; }
+        }
+
+        function replaceChart(id, message){
+            var chart = document.getElementById(id);
+            if(chart){
+                chart.outerHTML = '<div style="padding:80px 0;text-align:center;color:#999;">' + message + '</div>';
+            }
+        }
+
+        function escapeHtml(value){
+            return String(value).replace(/[&<>"']/g, function(ch){
+                return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+            });
+        }
+    });
+</script>
+</html>

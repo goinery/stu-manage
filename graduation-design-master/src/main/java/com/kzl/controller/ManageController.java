@@ -318,6 +318,23 @@ public class ManageController {
         return Result.create(0,"",stages);
     }
 
+    //跳转管理员综合统计页面
+    @RequestMapping("statistical")
+    public String statistical(HttpServletRequest request){
+        boolean state = judgeUserLoginState(request);
+        return state?"manage/statistical":"redirect:/";
+    }
+
+    //管理员综合统计数据
+    @ResponseBody
+    @RequestMapping("statisticalData")
+    public Result statisticalData(HttpServletRequest request){
+        if(!judgeUserLoginState(request)){
+            return Result.createFail("请先登录");
+        }
+        return Result.createSuccess(manageService.queryManageStatistics());
+    }
+
     //修改选课阶段（状态/三类选课开关）
     @ResponseBody
     @RequestMapping("updateSelectionStage")

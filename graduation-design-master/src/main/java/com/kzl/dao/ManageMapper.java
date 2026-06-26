@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface ManageMapper {
@@ -78,4 +79,16 @@ public interface ManageMapper {
 
     //删除资讯信息
     boolean deleteInformation(String id);
+
+    Map selectManageStatisticOverview();
+
+    List<Map> selectManageStudentCountByCollege();
+
+    List<Map> selectManageSelectionCountByCollege();
+
+    List<Map> selectManageCourseSelectionTop();
+
+    List<Map> selectManageSelectionCountByType();
+
+    List<Map> selectManageScoreStatusCount();
 }

@@ -91,4 +91,7 @@ public interface ManageService {
 
     //修改选课阶段
     boolean updateSelectionStage(SelectionStage selectionStage);
+
+    //管理员综合统计
+    Map<String, Object> queryManageStatistics();
 }

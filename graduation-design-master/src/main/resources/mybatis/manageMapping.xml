@@ -230,4 +230,83 @@
             allowOutside = #{allowOutside}
         WHERE id = #{id}
     </update>
+
+    <!-- 管理员综合统计：全校概览 -->
+    <select id="selectManageStatisticOverview" resultType="java.util.HashMap">
+        SELECT
+            (SELECT COUNT(1) FROM college WHERE state = '1') AS "collegeCount",
+            (SELECT COUNT(1) FROM teacher WHERE state = '1') AS "teacherCount",
+            (SELECT COUNT(1) FROM student WHERE state = '1') AS "studentCount",
+            (SELECT COUNT(1) FROM course WHERE state = '1') AS "courseCount",
+            (SELECT COUNT(1) FROM student_course_rel) AS "selectionCount",
+            (SELECT COUNT(1) FROM student_course_rel WHERE state = '1') AS "scoredCount",
+            (SELECT COUNT(1) FROM student_course_rel WHERE state = '0') AS "unscoredCount",
+            (SELECT academicYear FROM course_academic_year WHERE state = '1' LIMIT 1) AS "academicYear"
+    </select>
+
+    <!-- 管理员综合统计：学院学生数 -->
+    <select id="selectManageStudentCountByCollege" resultType="java.util.HashMap">
+        SELECT c.name AS "collegeName",
+               COUNT(s.id) AS "studentCount"
+        FROM college c
+        LEFT JOIN student s ON s.collegeId = c.id AND s.state = '1'
+        WHERE c.state = '1'
+        GROUP BY c.id, c.name
+        ORDER BY c.name
+    </select>
+
+    <!-- 管理员综合统计：学院选课分布 -->
+    <select id="selectManageSelectionCountByCollege" resultType="java.util.HashMap">
+        SELECT co.name AS "collegeName",
+               COUNT(sc.id) AS "selectionCount",
+               COUNT(DISTINCT sc.studentId) AS "studentCount"
+        FROM college co
+        LEFT JOIN course c ON c.collegeId = co.id AND c.state = '1'
+        LEFT JOIN student_course_rel sc ON sc.courseId = c.id
+        WHERE co.state = '1'
+        GROUP BY co.id, co.name
+        ORDER BY COUNT(sc.id) DESC, co.name
+    </select>
+
+    <!-- 管理员综合统计：课程热度 Top 10 -->
+    <select id="selectManageCourseSelectionTop" resultType="java.util.HashMap">
+        SELECT c.courseName AS "courseName",
+               co.name AS "collegeName",
+               c.optional AS "optional",
+               COUNT(sc.id) AS "selectionCount"
+        FROM course c
+        LEFT JOIN college co ON co.id = c.collegeId
+        LEFT JOIN student_course_rel sc ON sc.courseId = c.id
+        WHERE c.state = '1'
+        GROUP BY c.id, c.courseName, co.name, c.optional
+        ORDER BY COUNT(sc.id) DESC, c.courseName
+        LIMIT 10
+    </select>
+
+    <!-- 管理员综合统计：选课类型分布 -->
+    <select id="selectManageSelectionCountByType" resultType="java.util.HashMap">
+        SELECT CASE
+                   WHEN sc.selectionType = 'plan' THEN '方案内选课'
+                   WHEN sc.selectionType = 'outside' THEN '方案外选课'
+                   ELSE '推荐选课'
+               END AS "typeName",
+               COUNT(1) AS "selectionCount"
+        FROM student_course_rel sc
+        GROUP BY CASE
+                     WHEN sc.selectionType = 'plan' THEN '方案内选课'
+                     WHEN sc.selectionType = 'outside' THEN '方案外选课'
+                     ELSE '推荐选课'
+                 END
+    </select>
+
+    <!-- 管理员综合统计：成绩状态分布 -->
+    <select id="selectManageScoreStatusCount" resultType="java.util.HashMap">
+        SELECT '已评分' AS "statusName", COUNT(1) AS "count"
+        FROM student_course_rel
+        WHERE state = '1'
+        UNION ALL
+        SELECT '未评分' AS "statusName", COUNT(1) AS "count"
+        FROM student_course_rel
+        WHERE state = '0'
+    </select>
 </mapper>

@@ -11,7 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -276,5 +278,17 @@ public class ManageServiceImpl implements ManageService {
     @Override
     public boolean updateSelectionStage(SelectionStage selectionStage) {
         return manageMapper.updateSelectionStage(selectionStage);
+    }
+
+    @Override
+    public Map<String, Object> queryManageStatistics() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("overview", manageMapper.selectManageStatisticOverview());
+        data.put("studentByCollege", manageMapper.selectManageStudentCountByCollege());
+        data.put("selectionByCollege", manageMapper.selectManageSelectionCountByCollege());
+        data.put("courseTop", manageMapper.selectManageCourseSelectionTop());
+        data.put("selectionByType", manageMapper.selectManageSelectionCountByType());
+        data.put("scoreStatus", manageMapper.selectManageScoreStatusCount());
+        return data;
     }
 }
