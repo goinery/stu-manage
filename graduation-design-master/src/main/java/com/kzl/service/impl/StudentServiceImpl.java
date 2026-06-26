@@ -6,6 +6,8 @@ import com.kzl.entity.*;
 import com.kzl.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.*;
 import com.kzl.entity.SelectionStage;
@@ -48,6 +50,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    @Transactional
     public boolean updateStudentCourseRel(StudentCourseRel studentCourseRel) {
         //查询课程信息（含可选/已选人数、任课教师、上课时间）
         Course course1 = studentMapper.selectCourseById(studentCourseRel.getCourseId());
@@ -59,8 +62,16 @@ public class StudentServiceImpl implements StudentService {
         Course course2 = new Course();
         course2.setId(studentCourseRel.getCourseId());
         if("0".equals(studentCourseRel.getType())){
+            StudentCourseRel existingRel = studentMapper.selectStudentCourseRel(studentCourseRel.getCourseId(), studentCourseRel.getStudentId());
+            if(existingRel != null){
+                return false;
+            }
             //校验剩余容量
-            if(course1.getSelected() >= course1.getOptional()){
+            if(course1.getSelected() == null || course1.getOptional() == null || course1.getSelected() >= course1.getOptional()){
+                return false;
+            }
+            course2.setUseNumber(1);
+            if(studentMapper.updateCourse(course2) <= 0){
                 return false;
             }
             studentCourseRel.setId(UUID.randomUUID().toString().replaceAll("-",""));
@@ -69,16 +80,26 @@ public class StudentServiceImpl implements StudentService {
             studentCourseRel.setTeacherId(course1.getTeacherId());
             studentCourseRel.setIsQualified("0");
             studentCourseRel.setCreditsRemark(" ");
-            b = studentMapper.insertStudentCourseRel(studentCourseRel);
-            course2.setUseNumber(1);
-            //添加已选人数
+            try {
+                b = studentMapper.insertStudentCourseRel(studentCourseRel);
+            } catch (Exception e) {
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return false;
+            }
+            if(!b){
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return false;
+            }
         }else{
             b = studentMapper.deleteStudentCourseRel(studentCourseRel);
-            //删除已选人数
+            if(!b){
+                return false;
+            }
             course2.setUseNumber(-1);
-        }
-        if(b){
-            studentMapper.updateCourse(course2);
+            if(studentMapper.updateCourse(course2) <= 0){
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return false;
+            }
         }
         return b;
     }
@@ -324,13 +345,17 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    @Transactional
     public boolean dropStudentCourse(StudentCourseRel studentCourseRel) {
         boolean b = studentMapper.deleteStudentCourseRel(studentCourseRel);
         if(b){
             Course course2 = new Course();
             course2.setId(studentCourseRel.getCourseId());
             course2.setUseNumber(-1);
-            studentMapper.updateCourse(course2);
+            if(studentMapper.updateCourse(course2) <= 0){
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return false;
+            }
         }
         return b;
     }

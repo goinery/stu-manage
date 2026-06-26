@@ -74,14 +74,17 @@
     </select>
 
     <select id="selectCourseById" resultType="com.kzl.entity.Course">
-        SELECT id, courseName, teacherId, classDate, optional, selected
+        SELECT id, courseName, collegeId, teacherId, classDate, optional, selected, academicYear
         FROM course
         WHERE id=#{courseId}
+        AND state='1'
     </select>
 
     <update id="updateCourse"  parameterType="com.kzl.entity.Course">
         UPDATE course SET selected = selected + #{useNumber}
         WHERE id=#{id}
+        <if test="useNumber != null and useNumber &gt; 0">AND selected &lt; optional</if>
+        <if test="useNumber != null and useNumber &lt; 0">AND selected &gt; 0</if>
     </update>
 
     <!-- 根据ID查询学生信息 -->

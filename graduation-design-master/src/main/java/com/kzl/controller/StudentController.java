@@ -38,7 +38,7 @@ public class StudentController {
             List<Course> courses = studentService.selectCourseList(user.getId());
             double creditsCount = 0;
             for(Course course:courses){
-                creditsCount += course.getCredits();
+                creditsCount += course.getCredits() == null ? 0 : course.getCredits();
             }
             modelAndView.addObject("courseCount", courses.size());
             modelAndView.addObject("creditsCount", creditsCount);
@@ -76,6 +76,9 @@ public class StudentController {
     @ResponseBody
     @RequestMapping("courseSelection")
     public Result courseSelection(@RequestBody StudentCourseRel studentCourseRel, HttpServletRequest request){
+        if(!judgeUserLoginState(request)){
+            return Result.createFail("请先登录");
+        }
         //校验选课阶段
         SelectionStage stage = studentService.queryActiveSelectionStage();
         if(stage == null){
@@ -97,6 +100,12 @@ public class StudentController {
         //校验上课时间冲突
         Student user = (Student) request.getSession().getAttribute("user");
         Course course = studentService.queryCourseById(studentCourseRel.getCourseId());
+        if(course == null){
+            return Result.createFail("课程不存在或已被删除");
+        }
+        if(!isCourseAllowedForSelectionType(course, user, selectionType)){
+            return Result.createFail("课程类别与当前选课入口不匹配，无法选课");
+        }
         if(course != null && course.getClassDate() != null){
             boolean conflict = studentService.checkTimeConflict(user.getId(), course.getClassDate());
             if(conflict){
@@ -104,6 +113,7 @@ public class StudentController {
             }
         }
 
+        studentCourseRel.setStudentId(user.getId());
         studentCourseRel.setSelectionType(selectionType);
         boolean b = studentService.updateStudentCourseRel(studentCourseRel);
         if(!b){
@@ -162,6 +172,9 @@ public class StudentController {
     @ResponseBody
     @RequestMapping("courseDrop")
     public Result courseDrop(@RequestBody StudentCourseRel studentCourseRel, HttpServletRequest request){
+        if(!judgeUserLoginState(request)){
+            return Result.createFail("请先登录");
+        }
         SelectionStage stage = studentService.queryActiveSelectionStage();
         if(stage == null){
             return Result.createFail("当前不在选课时间段内，无法退课");
@@ -190,7 +203,7 @@ public class StudentController {
         CourseAcademicYear courseAcademicYear = studentService.getCourseAcademicYear();
         double creditsCount = 0;
         for(Course course:courses){
-            creditsCount += course.getCredits();
+            creditsCount += course.getCredits() == null ? 0 : course.getCredits();
         }
         modelAndView.addObject("courses",courses);
         modelAndView.addObject("academicYear",courseAcademicYear.getAcademicYearName());
@@ -223,6 +236,9 @@ public class StudentController {
     @ResponseBody
     @RequestMapping("statisticalData")
     public Result statisticalData(HttpServletRequest request){
+        if(!judgeUserLoginState(request)){
+            return Result.createFail("请先登录");
+        }
         Student user = (Student) request.getSession().getAttribute("user");
         Map<String, Object> data = new HashMap<>();
         data.put("byType", studentService.queryCourseCountByType(user.getId()));
@@ -239,5 +255,24 @@ public class StudentController {
             return false;
         }
         return true;
+    }
+
+    private boolean isCourseAllowedForSelectionType(Course course, Student user, String selectionType){
+        CourseAcademicYear activeYear = studentService.getCourseAcademicYear();
+        if(activeYear == null){
+            return false;
+        }
+        boolean sameCollege = user.getCollegeId() != null && user.getCollegeId().equals(course.getCollegeId());
+        boolean activeAcademicYear = activeYear.getAcademicYear() != null && activeYear.getAcademicYear().equals(course.getAcademicYear());
+        if("recommend".equals(selectionType)){
+            return sameCollege && activeAcademicYear && (course.getCourseName() == null || !course.getCourseName().contains("体育"));
+        }
+        if("plan".equals(selectionType)){
+            return sameCollege && !activeAcademicYear;
+        }
+        if("outside".equals(selectionType)){
+            return !sameCollege && activeAcademicYear;
+        }
+        return false;
     }
 }

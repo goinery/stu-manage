@@ -11,15 +11,15 @@ import java.util.Map;
 @Mapper
 public interface StudentMapper {
 
-    List<Course> selectCourseList(String collegeId,String courseAcademicYear);
+    List<Course> selectCourseList(@Param("collegeId") String collegeId, @Param("courseAcademicYear") String courseAcademicYear);
 
-    StudentCourseRel selectStudentCourseRel(String courseId, String studentId);
+    StudentCourseRel selectStudentCourseRel(@Param("courseId") String courseId, @Param("studentId") String studentId);
 
     boolean insertStudentCourseRel(StudentCourseRel studentCourseRel);
 
     boolean deleteStudentCourseRel(StudentCourseRel studentCourseRel);
 
-    List<Course> selectCourseListByStudent(String studentId,String courseAcademicYear);
+    List<Course> selectCourseListByStudent(@Param("studentId") String studentId, @Param("courseAcademicYear") String courseAcademicYear);
 
     CourseAcademicYear selectCourseAcademicYearByState();
 
@@ -29,7 +29,7 @@ public interface StudentMapper {
 
     Map selectSelectedCourseCount(Student user);
 
-    Course selectCourseByPeriodTime(String courseId, Date nowTime);
+    Course selectCourseByPeriodTime(@Param("courseId") String courseId, @Param("nowTime") Date nowTime);
 
     Course selectCourseById(String courseId);
 
