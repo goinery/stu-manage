@@ -5,7 +5,7 @@
 >
 <head>
     <meta charset="UTF-8"/>
-    <title>选课统计</title>
+    <title>我的选课统计</title>
     <link href="../../static/css/index.css" type="text/css" rel="stylesheet"/>
     <link href="../../static/css/course.css" type="text/css" rel="stylesheet"/>
     <link rel="stylesheet" href="../../static/layui/css/layui.css"/>
@@ -14,8 +14,7 @@
         .stat-card .stat-num{font-size:32px;font-weight:bold;margin:8px 0;}
         .stat-card .stat-label{font-size:14px;color:#666;}
         .chart-box{background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.1);padding:15px;margin:10px 1%;display:inline-block;vertical-align:top;}
-        .chart-left{width:48%;}
-        .chart-right{width:48%;}
+        .chart-third{width:31%;}
         .conflict-box{background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.1);padding:15px;margin:10px 1%;width:98%;}
         .conflict-item{padding:10px;margin:5px 0;border-left:4px solid #FF5722;background:#FFF8F0;border-radius:4px;}
         .no-conflict{padding:20px;text-align:center;color:#5FB878;font-size:16px;}
@@ -32,10 +31,10 @@
         <div style="padding: 15px;">
             <div class="index_cloum course-box">
                 <blockquote class="layui-elem-quote">
-                    选课统计
+                    我的选课统计
                 </blockquote>
 
-                <!-- 原有统计卡片 -->
+                <!-- 我的课程状态统计 -->
                 <div style="margin-bottom:15px;">
                     <blockquote class="layui-elem-quote course-column count-box">
                         <div>已完成课程统计</div>
@@ -64,7 +63,7 @@
 
                 <!-- 选课类型统计卡片 -->
                 <blockquote class="layui-elem-quote" style="margin-top:15px;">
-                    按选课类型统计
+                    我的选课类型统计
                 </blockquote>
                 <div id="typeStats" style="margin-bottom:15px;text-align:center;">
                     <div class="stat-card" style="border-top:4px solid #1E9FFF;">
@@ -92,12 +91,17 @@
                 <!-- 可视化图表区域 -->
                 <div style="margin:10px 0;">
                     <div class="chart-box chart-left">
-                        <h4 style="text-align:center;margin-bottom:10px;">选课类型分布</h4>
-                        <canvas id="typeChart" width="400" height="280"></canvas>
+                    <div class="chart-box chart-third">
+                        <h4 style="text-align:center;margin-bottom:10px;">我的选课类型分布</h4>
+                        <canvas id="typeChart" width="300" height="240"></canvas>
                     </div>
-                    <div class="chart-box chart-right">
-                        <h4 style="text-align:center;margin-bottom:10px;">学院选课分布</h4>
-                        <canvas id="collegeChart" width="400" height="280"></canvas>
+                    <div class="chart-box chart-third">
+                        <h4 style="text-align:center;margin-bottom:10px;">我的课程状态分布</h4>
+                        <canvas id="statusChart" width="300" height="240"></canvas>
+                    </div>
+                    <div class="chart-box chart-third">
+                        <h4 style="text-align:center;margin-bottom:10px;">我的课程所属学院分布</h4>
+                        <canvas id="collegeChart" width="300" height="240"></canvas>
                     </div>
                 </div>
 
@@ -148,10 +152,12 @@
                     var byCollege = data.byCollege || [];
                     if(typeof Chart !== 'undefined'){
                         renderTypeChart(byType);
+                        renderStatusChart(data.overview || {});
                         renderCollegeChart(byCollege);
                     } else {
                         $('#typeChart').replaceWith('<div style="padding:40px 0;text-align:center;color:#999;">图表组件未加载，统计卡片数据可正常验收</div>');
-                        $('#collegeChart').replaceWith('<div style="padding:40px 0;text-align:center;color:#999;">图表组件未加载，学院统计数据可通过接口验收</div>');
+                        $('#statusChart').replaceWith('<div style="padding:40px 0;text-align:center;color:#999;">图表组件未加载，课程状态数据可通过统计卡片验收</div>');
+                        $('#collegeChart').replaceWith('<div style="padding:40px 0;text-align:center;color:#999;">图表组件未加载，我的课程所属学院数据可通过接口验收</div>');
                     }
 
                     //渲染时间冲突
@@ -200,6 +206,31 @@
             });
         }
 
+        //渲染我的课程完成状态
+        function renderStatusChart(overview){
+            var completed = parseInt(overview.completedCourses) || 0;
+            var ongoing = parseInt(overview.ongoingCourses) || 0;
+            var ctx = document.getElementById('statusChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['已完成', '进行中'],
+                    datasets: [{
+                        data: [completed, ongoing],
+                        backgroundColor: ['#5FB878', '#FFB800'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
         //渲染学院选课分布柱状图
         function renderCollegeChart(byCollege){
             var labels = [];
@@ -218,7 +249,7 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: '选课门数',
+                        label: '我的选课门数',
                         data: values,
                         backgroundColor: '#1E9FFF',
                         borderRadius: 4
