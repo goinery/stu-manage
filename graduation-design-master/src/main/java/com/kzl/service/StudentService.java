@@ -10,6 +10,8 @@ public interface StudentService {
 
     Information queryInformation(String roleId);
 
+    List<Information> queryInformationList(String roleId);
+
     List<Course> queryCourseList(String collegeId,String userId);
 
     boolean updateStudentCourseRel(StudentCourseRel studentCourseRel);

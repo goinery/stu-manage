@@ -31,9 +31,10 @@ public class ManageController {
     public ModelAndView getLoginData(String id,String loginName,String username,String roleId,String roleName,HttpServletRequest request){
         ManageUser user = new ManageUser(id,loginName,username,null,roleId,null,null,roleName);
         List<Menu> menuList = manageService.queryUserRoleMenu(user.getRoleId());
-        Information information = manageService.queryInformation(user.getRoleId());
+        List<Information> informationList = manageService.queryInformationListByRoleId(user.getRoleId());
         ModelAndView modelAndView = new ModelAndView("index");
-        modelAndView.addObject("information",information);
+        modelAndView.addObject("informationList", informationList);
+        modelAndView.addObject("information", firstInformation(informationList));
         modelAndView.addObject("userType","1");
         request.getSession().setAttribute("user",user);
         request.getSession().setAttribute("menuList",menuList);
@@ -54,7 +55,9 @@ public class ManageController {
         ModelAndView modelAndView = new ModelAndView("index");
         modelAndView.addObject("userType", userType);
         if(userType != null){
-            modelAndView.addObject("information", manageService.queryInformation(userType));
+            List<Information> informationList = manageService.queryInformationListByRoleId(userType);
+            modelAndView.addObject("informationList", informationList);
+            modelAndView.addObject("information", firstInformation(informationList));
         }
         //当前学年（学生/教师卡片共用）
         try {

@@ -9,6 +9,8 @@ public interface TeacherService {
 
     Information queryInformation(String roleId);
 
+    List<Information> queryInformationList(String roleId);
+
     //查询教师课程
     List<Course> selectCourseListByTeacherId(String id);
 

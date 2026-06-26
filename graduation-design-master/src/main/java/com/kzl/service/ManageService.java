@@ -14,6 +14,9 @@ public interface ManageService {
     //查询资讯-通过角色
     Information queryInformation(String roleId);
 
+    //查询角色首页资讯列表
+    List<Information> queryInformationListByRoleId(String roleId);
+
     //查询菜单列表
     JSONArray queryMenuList();
 

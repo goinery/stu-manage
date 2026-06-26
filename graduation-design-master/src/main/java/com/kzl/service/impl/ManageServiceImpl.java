@@ -37,6 +37,11 @@ public class ManageServiceImpl implements ManageService {
     }
 
     @Override
+    public List<Information> queryInformationListByRoleId(String roleId) {
+        return manageMapper.selectInformationListByRoleId(roleId);
+    }
+
+    @Override
     public JSONArray queryMenuList() {
         JSONArray menus = manageMapper.selectMenuList();
         return menus;

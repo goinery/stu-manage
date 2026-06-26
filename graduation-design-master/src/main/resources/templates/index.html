@@ -88,14 +88,21 @@
                 </div>
 
                 <!-- 公告信息 -->
-                <blockquote class="layui-elem-quote">
-                    <div class="notice_title"> [[${information != null ? information.title : '暂无公告'}]]</div>
-                    <div class="notice_content" id="content">
-
+                <blockquote class="layui-elem-quote notice_list">
+                    <div th:if="${informationList == null or #lists.isEmpty(informationList)}" class="notice_empty">
+                        暂无公告
                     </div>
-                    <div class="notice_date">
-                        <span th:if="${information != null and information.publishDate != null}" th:text="${#dates.format(information.publishDate, 'yyyy-MM-dd')}"></span>
-                        <span th:if="${information == null or information.publishDate == null}">--</span>
+                    <div th:each="notice : ${informationList}" class="notice_item">
+                        <div class="notice_title" th:text="${notice.title} ?: '暂无公告'">暂无公告</div>
+                        <div class="notice_content" th:if="${notice.content != null and not #strings.isEmpty(notice.content)}" th:utext="${notice.content}"></div>
+                        <div class="notice_content" th:if="${notice.content == null or #strings.isEmpty(notice.content)}">
+                            <span style="color:#999;">暂无公告内容</span>
+                        </div>
+                        <div class="notice_date">
+                            <span th:if="${notice.publishDate != null}" th:text="${#dates.format(notice.publishDate, 'yyyy-MM-dd')}"></span>
+                            <span th:if="${notice.publishDate == null}">--</span>
+                        </div>
+                        <div class="clear"></div>
                     </div>
                 </blockquote>
             </div>
@@ -104,18 +111,4 @@
 </div>
 </body>
 <script src="../static/layui/layui.all.js"></script>
-<script th:inline="javascript">
-    layui.use('layer',function(){
-        var layer = layui.layer,
-            $ = layui.jquery;
-        layer.ready(function(){
-            var content = [[${information != null ? information.content : ''}]];
-            if(content){
-                document.getElementById('content').innerHTML = content;
-            } else {
-                document.getElementById('content').innerHTML = '<span style="color:#999;">暂无公告内容</span>';
-            }
-        });
-    });
-</script>
 </html>

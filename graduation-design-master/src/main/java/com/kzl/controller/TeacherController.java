@@ -31,9 +31,10 @@ public class TeacherController {
         Teacher user = new Teacher(id,loginName,username,roleId,roleName,collegeId);
         user.setCollegeName(collegeName);
         List<Menu> menuList = teacherService.queryUserRoleMenu(user.getRoleId());
-        Information information = teacherService.queryInformation(user.getRoleId());
+        List<Information> informationList = teacherService.queryInformationList(user.getRoleId());
         ModelAndView modelAndView = new ModelAndView("index");
-        modelAndView.addObject("information",information);
+        modelAndView.addObject("informationList", informationList);
+        modelAndView.addObject("information", firstInformation(informationList));
         modelAndView.addObject("userType","2");
         modelAndView.addObject("collegeName",collegeName);
         try {
@@ -212,5 +213,12 @@ public class TeacherController {
             return false;
         }
         return true;
+    }
+
+    private Information firstInformation(List<Information> informationList){
+        if(informationList == null || informationList.isEmpty()){
+            return null;
+        }
+        return informationList.get(0);
     }
 }

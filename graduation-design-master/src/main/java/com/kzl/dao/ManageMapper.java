@@ -14,6 +14,8 @@ public interface ManageMapper {
 
     Information selectInformationByRoleId(String roleId);
 
+    List<Information> selectInformationListByRoleId(String roleId);
+
     JSONArray selectMenuList();
 
     boolean insertMenu(Menu menu);

@@ -29,9 +29,10 @@ public class StudentController {
     public ModelAndView getLoginData(String id, String loginName, String username, String roleId, String roleName,String collegeId, HttpServletRequest request){
         Student user = new Student(id,loginName,username,roleId,roleName,collegeId);
         List<Menu> menuList = studentService.queryUserRoleMenu(user.getRoleId());
-        Information information = studentService.queryInformation(user.getRoleId());
+        List<Information> informationList = studentService.queryInformationList(user.getRoleId());
         ModelAndView modelAndView = new ModelAndView("index");
-        modelAndView.addObject("information",information);
+        modelAndView.addObject("informationList", informationList);
+        modelAndView.addObject("information", firstInformation(informationList));
         modelAndView.addObject("userType","3");
         //查询选课统计数据
         try {
@@ -274,5 +275,12 @@ public class StudentController {
             return !sameCollege && activeAcademicYear;
         }
         return false;
+    }
+
+    private Information firstInformation(List<Information> informationList){
+        if(informationList == null || informationList.isEmpty()){
+            return null;
+        }
+        return informationList.get(0);
     }
 }

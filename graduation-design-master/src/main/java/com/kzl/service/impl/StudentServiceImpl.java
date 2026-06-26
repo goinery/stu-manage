@@ -38,6 +38,11 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    public List<Information> queryInformationList(String roleId) {
+        return manageMapper.selectInformationListByRoleId(roleId);
+    }
+
+    @Override
     public List<Course> queryCourseList(String collegeId,String userId) {
         CourseAcademicYear courseAcademicYear = studentMapper.selectCourseAcademicYearByState();
         List<Course> courses = studentMapper.selectCourseList(collegeId,courseAcademicYear.getAcademicYear());
