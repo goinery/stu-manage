@@ -24,7 +24,7 @@
                     <div class="dropdown search_college">
                         <span class="name_title">选择学院:</span>
                         <select class="dropbtn" id="tag" name="tag">
-                            <option value="0">选择所属的学院</option>
+                            <option value="">全部学院</option>
                             <option th:each="college : ${collegeList}" th:value="${college.id}" th:text="${college.name}" />
                         </select>
                     </div>
@@ -32,6 +32,10 @@
                     <div class="search_name">
                         <span class="name_title">姓名:</span>
                         <input type="text" name="username" id="username"  autocomplete="off" placeholder="请输入姓名/支持模糊查询" class="search_input">
+                    </div>
+                    <div class="search_name">
+                        <span class="name_title">学号:</span>
+                        <input type="text" name="studentNumber" id="studentNumber" autocomplete="off" placeholder="请输入学号/支持模糊查询" class="search_input">
                     </div>
                     <div class="search_btn">
                         <button type="button" class="layui-btn" data-type="reload">搜索</button>
@@ -116,11 +120,13 @@
         var active = {
             reload: function(){
                 var username = $('#username');
+                var studentNumber = $('#studentNumber');
                 var collegeId = $('select[name="tag"] option:selected').val();
                 //执行重载
                 table.reload('studentReload', {
                     where: {
                         'username': username.val(),
+                        'studentNumber': studentNumber.val(),
                         'collegeId':collegeId
                     }
                 }, 'data');

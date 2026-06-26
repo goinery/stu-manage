@@ -245,8 +245,8 @@ public class ManageController {
     @RequestMapping("teacherList")
     public Result teacherList(HttpServletRequest request){
         Teacher teacher = new Teacher();
-        teacher.setUsername(request.getParameter("username"));
-        teacher.setCollegeId(request.getParameter("collegeId"));
+        teacher.setUsername(cleanTextParam(request.getParameter("username")));
+        teacher.setCollegeId(cleanSelectParam(request.getParameter("collegeId")));
         List<Teacher> teachers = manageService.queryTeacherList(teacher);
         return Result.create(0,"",teachers);
     }
@@ -278,8 +278,9 @@ public class ManageController {
     @RequestMapping("studentList")
     public Result studentList(HttpServletRequest request){
         Student student = new Student();
-        student.setUsername(request.getParameter("username"));
-        student.setCollegeId(request.getParameter("collegeId"));
+        student.setUsername(cleanTextParam(request.getParameter("username")));
+        student.setStudentNumber(cleanTextParam(request.getParameter("studentNumber")));
+        student.setCollegeId(cleanSelectParam(request.getParameter("collegeId")));
         List<Student> teachers = manageService.queryStudentList(student);
         return Result.create(0,"",teachers);
     }
@@ -364,6 +365,29 @@ public class ManageController {
             return false;
         }
         return true;
+    }
+
+    private static Information firstInformation(List<Information> informationList){
+        if(informationList == null || informationList.isEmpty()){
+            return null;
+        }
+        return informationList.get(0);
+    }
+
+    private static String cleanTextParam(String value){
+        if(value == null){
+            return null;
+        }
+        String text = value.trim();
+        return text.isEmpty() ? null : text;
+    }
+
+    private static String cleanSelectParam(String value){
+        String text = cleanTextParam(value);
+        if(text == null || "0".equals(text)){
+            return null;
+        }
+        return text;
     }
 
 }
