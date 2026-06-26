@@ -45,24 +45,32 @@ public class TeacherServiceImpl implements TeacherService {
     }
 
     @Override
-    public List<StudentCourseRel> queryStudentList(String academicYear, String userId) {
-        List<StudentCourseRel> studentCourseRels = teacherMapper.selectStudentListByCourse(academicYear,userId);
+    public List<StudentCourseRel> queryStudentList(String academicYear, String userId, String studentName, String courseName) {
+        List<StudentCourseRel> studentCourseRels = teacherMapper.selectStudentListByCourse(academicYear, userId, studentName, courseName);
         return studentCourseRels;
     }
 
     @Override
     public boolean updateStudentScore(StudentCourseRel studentCourseRel, String id) {
-        //课程id，学生id  是否合格、评分备注
-        // 修改状态 、评价教师教师
+        if(studentCourseRel == null || studentCourseRel.getId() == null || studentCourseRel.getId().trim().isEmpty()){
+            return false;
+        }
+        if(!"0".equals(studentCourseRel.getIsQualified()) && !"1".equals(studentCourseRel.getIsQualified())){
+            return false;
+        }
+        if("1".equals(studentCourseRel.getIsQualified())){
+            studentCourseRel.setCreditsRemark(" ");
+        } else if(studentCourseRel.getCreditsRemark() == null || studentCourseRel.getCreditsRemark().trim().isEmpty()){
+            return false;
+        }
         studentCourseRel.setState("1");
-        studentCourseRel.setTeacherId(id);
-        boolean b = teacherMapper.updateStudentCourseRel(studentCourseRel);
-        return b;
+        int rows = teacherMapper.updateStudentCourseRel(studentCourseRel, id);
+        return rows > 0;
     }
 
     @Override
-    public List<StudentCourseRel> getStudentInCourse(String academicYear, String userId) {
-        List<StudentCourseRel> studentCourses =  teacherMapper.selectStudentListByCourse(academicYear,userId);
+    public List<StudentCourseRel> getStudentInCourse(String academicYear, String userId, String studentName, String courseName) {
+        List<StudentCourseRel> studentCourses = teacherMapper.selectStudentListByCourse(academicYear, userId, studentName, courseName);
         return studentCourses;
     }
 

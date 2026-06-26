@@ -13,18 +13,32 @@
     </select>
 
     <select id="selectStudentListByCourse" resultType="com.kzl.entity.StudentCourseRel">
-        SELECT s.username studentName,c.courseName courseName,c.credits courseCredits,c.academicYear academicYear,sc.isQualified isQualified,sc.state state,c.teachEndDate teachEndDate,s.studentNumber studentNumber
+        SELECT sc.id id, sc.studentId studentId, sc.courseId courseId, sc.teacherId teacherId,
+               s.username studentName, c.courseName courseName, c.credits courseCredits,
+               c.academicYear academicYear, sc.isQualified isQualified, sc.creditsRemark creditsRemark,
+               sc.state state, c.teachEndDate teachEndDate, s.studentNumber studentNumber
         FROM student_course_rel sc
         LEFT JOIN course c ON c.id=sc.courseId
         LEFT JOIN student s ON s.id = sc.studentId
         WHERE c.teacherId=#{teacherId}
         AND c.academicYear = #{academicYear}
+        <if test="studentName!=null and studentName!=''">AND s.username LIKE '%' || #{studentName} || '%'</if>
+        <if test="courseName!=null and courseName!=''">AND c.courseName = #{courseName}</if>
+        ORDER BY c.courseName, s.studentNumber
     </select>
 
-    <update id="updateStudentCourseRel" parameterType="com.kzl.entity.StudentCourseRel">
-        UPDATE student_course_rel SET state=#{state},isQualified=#{isQualified},teacherId=#{teacherId}
-        <if test="isQualified == '0'.toString()">,creditsRemark=#{creditsRemark}</if>
-        WHERE id=#{id}
+    <update id="updateStudentCourseRel">
+        UPDATE student_course_rel sc
+        SET state=#{record.state},
+            isQualified=#{record.isQualified},
+            teacherId=#{teacherId},
+            creditsRemark=#{record.creditsRemark}
+        FROM course c
+        WHERE sc.courseId = c.id
+        AND sc.id=#{record.id}
+        AND c.teacherId=#{teacherId}
+        AND c.teachEndDate &lt;= CURRENT_TIMESTAMP
+        AND sc.state='0'
     </update>
 
     <select id="selectCourseAcademicYearList" resultType="com.kzl.entity.CourseAcademicYear">
@@ -33,7 +47,7 @@
     </select>
 
     <select id="selectTeacherStatisList"  resultType="com.kzl.entity.TeacherStatis">
-        SELECT count(s.studentNumber) as count, cu.name name
+        SELECT count(s.studentNumber) as "count", cu.name name
         FROM student_course_rel sc
                  LEFT JOIN course c ON c.id=sc.courseId
                  LEFT JOIN student s ON s.id = sc.studentId

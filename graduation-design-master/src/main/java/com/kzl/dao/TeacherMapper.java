@@ -9,11 +9,14 @@ import java.util.List;
 @Mapper
 public interface TeacherMapper {
 
-    List<Course> selectCourseListByTeacher(String teacherId, String academicYear);
+    List<Course> selectCourseListByTeacher(@Param("teacherId") String teacherId, @Param("academicYear") String academicYear);
 
-    List<StudentCourseRel> selectStudentListByCourse(String academicYear, String teacherId);
+    List<StudentCourseRel> selectStudentListByCourse(@Param("academicYear") String academicYear,
+                                                     @Param("teacherId") String teacherId,
+                                                     @Param("studentName") String studentName,
+                                                     @Param("courseName") String courseName);
 
-    boolean updateStudentCourseRel(StudentCourseRel studentCourseRel);
+    int updateStudentCourseRel(@Param("record") StudentCourseRel studentCourseRel, @Param("teacherId") String teacherId);
 
     List<CourseAcademicYear> selectCourseAcademicYearList();
 

@@ -13,13 +13,13 @@ public interface TeacherService {
     List<Course> selectCourseListByTeacherId(String id);
 
     //查询学生的选课
-    List<StudentCourseRel> queryStudentList(String academicYear, String userId);
+    List<StudentCourseRel> queryStudentList(String academicYear, String userId, String studentName, String courseName);
 
     //学生成绩评价
     boolean updateStudentScore(StudentCourseRel studentCourseRel, String id);
 
     //查询选择课程的学生信息
-    List<StudentCourseRel> getStudentInCourse(String academicYear, String userId);
+    List<StudentCourseRel> getStudentInCourse(String academicYear, String userId, String studentName, String courseName);
 
     //查询课程
     List<Course> selectCourseList(String teacherId, String courseAcademicYear);

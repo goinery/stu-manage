@@ -105,8 +105,13 @@ public class TeacherController {
     @ResponseBody
     @RequestMapping("courseList")
     public Result courseList(HttpServletRequest request){
+        if(!judgeUserLoginState(request)){
+            return Result.createFail("请先登录");
+        }
         Teacher user = (Teacher) request.getSession().getAttribute("user");
         String academicYearParam = request.getParameter("academicYear");
+        String studentName = request.getParameter("username");
+        String courseName = request.getParameter("courseName");
         String academicYear;
         if(academicYearParam != null && !academicYearParam.isEmpty()){
             academicYear = academicYearParam;
@@ -114,7 +119,7 @@ public class TeacherController {
             CourseAcademicYear courseAcademicYear = studentService.getCourseAcademicYear();
             academicYear = courseAcademicYear.getAcademicYear();
         }
-        List<StudentCourseRel> courses = teacherService.queryStudentList(academicYear, user.getId());
+        List<StudentCourseRel> courses = teacherService.queryStudentList(academicYear, user.getId(), studentName, courseName);
         return Result.create(0,"",courses);
     }
 
@@ -122,11 +127,12 @@ public class TeacherController {
     @ResponseBody
     @RequestMapping("updateScore")
     public Result updateScore(@RequestBody StudentCourseRel studentCourseRel, HttpServletRequest request){
-        //id  是否合格、评分备注
-        // 修改状态 、评价教师教师、评价状态、
+        if(!judgeUserLoginState(request)){
+            return Result.createFail("请先登录");
+        }
         Teacher user = (Teacher) request.getSession().getAttribute("user");
         boolean b = teacherService.updateStudentScore(studentCourseRel,user.getId());
-        return b?Result.createSuccess("成绩评价成功"):Result.createFail("成绩评价修改失败");
+        return b?Result.createSuccess("成绩评价成功"):Result.createFail("成绩评价失败：课程未结束、记录不存在或不属于当前教师");
     }
 
 
@@ -159,8 +165,13 @@ public class TeacherController {
     @ResponseBody
     @RequestMapping("studentInfoInCourse")
     public Result studentInfoInCourse(HttpServletRequest request){
+        if(!judgeUserLoginState(request)){
+            return Result.createFail("请先登录");
+        }
         Teacher user = (Teacher) request.getSession().getAttribute("user");
         String academicYearParam = request.getParameter("academicYear");
+        String studentName = request.getParameter("username");
+        String courseName = request.getParameter("courseName");
         String academicYear;
         if(academicYearParam != null && !academicYearParam.isEmpty()){
             academicYear = academicYearParam;
@@ -168,7 +179,7 @@ public class TeacherController {
             CourseAcademicYear courseAcademicYear = studentService.getCourseAcademicYear();
             academicYear = courseAcademicYear.getAcademicYear();
         }
-        List<StudentCourseRel> studentCourses = teacherService.getStudentInCourse(academicYear, user.getId());
+        List<StudentCourseRel> studentCourses = teacherService.getStudentInCourse(academicYear, user.getId(), studentName, courseName);
         return Result.create(0,"",studentCourses);
     }
 
@@ -182,8 +193,11 @@ public class TeacherController {
         if(state){
             Teacher user = (Teacher) request.getSession().getAttribute("user");
             List<TeacherStatis> CoutStudent_collage = teacherService.selectTeacherStatisList(user.getId());
+            CourseAcademicYear courseAcademicYear = studentService.getCourseAcademicYear();
+            List<Course> courses = teacherService.selectCourseList(user.getId(), courseAcademicYear.getAcademicYear());
             modelAndView.setViewName("teacher/statisticalInfo");
             modelAndView.addObject("TeacherStatis", CoutStudent_collage);
+            modelAndView.addObject("courseCount", courses.size());
         } else {
             modelAndView.setViewName("redirect:/");
         }
