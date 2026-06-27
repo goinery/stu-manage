@@ -29,10 +29,15 @@ public class CourseController {
     @RequestMapping("list")
     public ModelAndView course(HttpServletRequest request){
         ModelAndView modelAndView = new ModelAndView();
-        List<Map> colleges = service.selectCollegeList();
         boolean state = judgeManageLoginState(request);
-        modelAndView.setViewName(state?"manage/course":"redirect:/");
+        if(!state){
+            modelAndView.setViewName("redirect:/");
+            return modelAndView;
+        }
+        List<Map> colleges = service.selectCollegeList();
+        modelAndView.setViewName("manage/course");
         modelAndView.addObject("collegeList",colleges);
+        modelAndView.addObject("currentAcademicYear", getCurrentAcademicYearName());
         return modelAndView;
     }
 
@@ -136,6 +141,19 @@ public class CourseController {
         String userType = (String) request.getSession().getAttribute("userType");
         List<Menu> menus = (List) request.getSession().getAttribute("menuList");
         return user != null && "1".equals(userType) && menus != null && menus.size() > 0;
+    }
+
+    private String getCurrentAcademicYearName(){
+        List<CourseAcademicYear> courseAcademicYears = courseService.queryCourseAcademicYearList();
+        if(courseAcademicYears == null){
+            return null;
+        }
+        for(CourseAcademicYear courseAcademicYear : courseAcademicYears){
+            if("1".equals(courseAcademicYear.getState())){
+                return courseAcademicYear.getAcademicYear();
+            }
+        }
+        return null;
     }
 
 }

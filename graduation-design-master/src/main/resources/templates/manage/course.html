@@ -21,7 +21,10 @@
                     <!--课程管理 <hr>-->
                     <div class="college_title">课程管理</div>
                     <div class="college_add"><button type="button" class="layui-btn" onclick="addCourse()">添加课程</button></div>
-                    <div class="college_add course_academic_year_tip">当前可以选择的课程学年:2020下半学年</div>
+                    <div class="college_add course_academic_year_tip"
+                         th:text="${currentAcademicYear != null ? '当前新增课程归属学年：' + currentAcademicYear : '当前新增课程归属学年：未配置'}">
+                        当前新增课程归属学年：未配置
+                    </div>
                     <hr>
                 </div>
                 <div class="search_top">
