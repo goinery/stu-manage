@@ -1,0 +1,12 @@
+graduation-design-master\sql
+此目录用于帮助我在数据库一次性初始化数据，需要考虑数据残留问题，在修改前删除表再添加数据
+
+su - omm
+gs_om -t status --detail
+gs_om -t start;
+gsql -d postgres -p 26000 -r
+gsql -d oasys -p 26000 -r
+java -jar graduation-design-master/target/springboot-student.jar
+
+查看所有表
+\dt;
