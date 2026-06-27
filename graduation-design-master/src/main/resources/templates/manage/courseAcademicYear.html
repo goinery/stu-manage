@@ -1,10 +1,105 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
     <title>课程学年管理</title>
     <link href="../../static/css/index.css" type="text/css" rel="stylesheet"/>
     <link rel="stylesheet" href="../../static/layui/css/layui.css"/>
+    <style>
+        .year-page {
+            max-width: 1180px;
+        }
+        .year-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+        .year-title {
+            font-size: 20px;
+            font-weight: 600;
+            line-height: 32px;
+        }
+        .year-subtitle {
+            margin-top: 4px;
+            color: #666;
+            line-height: 22px;
+        }
+        .year-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        .year-current {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 18px;
+            align-items: stretch;
+            margin-bottom: 12px;
+        }
+        .year-current-main {
+            border: 1px solid #e6e6e6;
+            padding: 16px;
+            background: #fff;
+        }
+        .year-current-label {
+            color: #777;
+            margin-bottom: 10px;
+        }
+        .year-current-name {
+            min-height: 34px;
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f7a4d;
+        }
+        .year-impact {
+            border-left: 4px solid #16baaa;
+            background: #f6fffb;
+            padding: 14px 16px;
+            color: #444;
+            line-height: 24px;
+        }
+        .year-warning {
+            margin-bottom: 12px;
+            line-height: 24px;
+        }
+        .year-warning span {
+            display: inline-block;
+            margin-right: 22px;
+        }
+        .year-table-box {
+            background: #fff;
+            border: 1px solid #e6e6e6;
+        }
+        .year-table {
+            margin: 0;
+        }
+        .year-table th,
+        .year-table td {
+            text-align: left;
+            vertical-align: middle;
+        }
+        .year-empty {
+            padding: 32px;
+            text-align: center;
+            color: #999;
+        }
+        @media (max-width: 900px) {
+            .year-header,
+            .year-current {
+                display: block;
+            }
+            .year-actions {
+                justify-content: flex-start;
+                margin-top: 12px;
+            }
+            .year-impact {
+                margin-top: 12px;
+            }
+        }
+    </style>
 </head>
 <body class="layui-layout-body">
 <div class="layui-layout layui-layout-admin">
@@ -15,27 +110,82 @@
     <!-- 内容主体区域 -->
     <div class="layui-body">
         <div style="padding: 15px;">
-            <div class="index_cloum">
-                <blockquote class="layui-elem-quote">
-                    选择课程学年
-                </blockquote>
-                <blockquote class="layui-elem-quote">
-                    <div class="academic_year_check">
-                        <div class="dropdown input_box check_box">
-                            <div class="name_title">选择学年:</div>
-                            <select class="dropbtn" id="academicYears" name="academicYears" >
-                                <option th:each="academicYears : ${courseAcademicYears}" th:value="${academicYears.id}" th:text="${academicYears.academicYear}" th:selected="${academicYears.state eq '1'}"/>
-                            </select>
+            <div class="year-page">
+                <div class="year-header">
+                    <div>
+                        <div class="year-title">课程学年管理</div>
+                        <div class="year-subtitle">维护系统当前学年。当前学年会影响新增课程归属、学生选课入口、教师课程与成绩统计。</div>
+                    </div>
+                    <div class="year-actions">
+                        <button type="button" class="layui-btn" onclick="addAcademicYears()">添加学年</button>
+                        <a class="layui-btn layui-btn-primary" href="/manage/selectionStage">选课管理</a>
+                        <a class="layui-btn layui-btn-primary" href="/course/list">课程列表</a>
+                    </div>
+                </div>
+
+                <div class="year-current">
+                    <div class="year-current-main">
+                        <div class="year-current-label">当前启用学年</div>
+                        <div class="year-current-name">
+                            <span th:each="academicYears : ${courseAcademicYears}"
+                                  th:if="${academicYears.state eq '1'}"
+                                  th:text="${academicYears.academicYear}">--</span>
+                            <span th:if="${courseAcademicYears == null || #lists.isEmpty(courseAcademicYears)}">未配置</span>
                         </div>
                     </div>
-                    <div class="academic_year_btn">
-                        <button type="button" class="layui-btn" onclick="checkAcademicYears()">确定</button>
+                    <div class="year-impact">
+                        <div>切换当前学年不会迁移已有课程和选课记录，只会改变后续业务默认读取的学年。</div>
+                        <div>切换后请确认该学年已有课程，并在选课管理中配置对应选课阶段，否则学生端可能无法选课。</div>
                     </div>
-                    <div class="clear"></div>
+                </div>
+
+                <blockquote class="layui-elem-quote year-warning">
+                    <span>当前学年只能有一个。</span>
+                    <span>新增学年默认未启用。</span>
+                    <span>新增课程会自动归属当前启用学年。</span>
+                    <span>学生推荐选课和方案外选课按当前学年展示。</span>
                 </blockquote>
-                <blockquote class="layui-elem-quote">
-                    <button type="button" class="layui-btn layui-btn-primary" onclick="addAcademicYears()">添加学年</button>
-                </blockquote>
+
+                <div class="year-table-box">
+                    <table class="layui-table year-table">
+                        <thead>
+                        <tr>
+                            <th style="width: 180px;">学年</th>
+                            <th style="width: 120px;">状态</th>
+                            <th>业务影响</th>
+                            <th style="width: 240px;">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="academicYears : ${courseAcademicYears}">
+                            <td th:text="${academicYears.academicYear}">2025上半学年</td>
+                            <td>
+                                <span class="layui-badge layui-bg-green" th:if="${academicYears.state eq '1'}">当前学年</span>
+                                <span class="layui-badge" th:if="${academicYears.state ne '1'}">未启用</span>
+                            </td>
+                            <td>
+                                <span th:if="${academicYears.state eq '1'}">新增课程、学生选课中心、教师课程与统计默认使用该学年。</span>
+                                <span th:if="${academicYears.state ne '1'}">可提前录入课程；设为当前后请同步检查选课阶段。</span>
+                            </td>
+                            <td>
+                                <button type="button"
+                                        class="layui-btn layui-btn-sm"
+                                        th:if="${academicYears.state ne '1'}"
+                                        th:attr="data-id=${academicYears.id},data-name=${academicYears.academicYear}"
+                                        onclick="setCurrentAcademicYear(this)">设为当前</button>
+                                <button type="button"
+                                        class="layui-btn layui-btn-sm layui-btn-disabled"
+                                        disabled
+                                        th:if="${academicYears.state eq '1'}">已启用</button>
+                                <a class="layui-btn layui-btn-primary layui-btn-sm" href="/manage/selectionStage">配置选课阶段</a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="year-empty" th:if="${courseAcademicYears == null || #lists.isEmpty(courseAcademicYears)}">
+                        暂无学年，请先添加学年。
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -43,41 +193,54 @@
 </body>
 <script src="../../static/layui/layui.all.js"></script>
 <script>
-    layui.use(['table', 'layer', 'laydate'], function(){
+    layui.use(['layer', 'jquery'], function(){
         var layer = layui.layer,
-            table = layui.table,
             $ = layui.jquery;
 
-        //修改学年
-        window.checkAcademicYears = function () {
-           var academicYears = $('select[name="academicYears"] option:selected').val();
-           var data = {
-                'id': academicYears,
-           };
-           data = JSON.stringify(data);
-           $.ajax({
+        function updateAcademicYear(id) {
+            $.ajax({
                 url: '/course/updateAcademicYears',
                 method: 'post',
-                data: data,
+                data: JSON.stringify({ id: id }),
                 contentType: "application/json;charset=utf-8",
                 traditional: true,
                 dataType: 'text',
                 success: function (res) {
-                    res = JSON.parse(res)
+                    res = JSON.parse(res);
                     if(res.code == '201'){
-                        layer.msg(res.data)
+                        layer.msg(res.data || '修改学年数据失败');
                     }else{
-                        var message = res.data;
-                        window.location.reload();
-                        layer.msg(res.data)
+                        layer.msg(res.data || '当前学年已更新');
+                        setTimeout(function(){
+                            window.location.reload();
+                        }, 600);
                     }
+                },
+                error: function () {
+                    layer.msg('服务器连接失败');
                 }
             });
+        }
+
+        window.setCurrentAcademicYear = function (button) {
+            var id = button.getAttribute('data-id');
+            var name = button.getAttribute('data-name');
+            if(!id){
+                layer.msg('学年数据异常，无法切换');
+                return;
+            }
+            layer.confirm(
+                '确认将“' + name + '”设为当前学年？<br>切换后新增课程、学生选课中心、教师课程与统计将默认使用该学年。请确认已配置对应选课阶段。',
+                {icon: 3, title: '切换当前学年'},
+                function(index){
+                    layer.close(index);
+                    updateAcademicYear(id);
+                }
+            );
         };
 
         //添加学年
         window.addAcademicYears = function () {
-            console.log("academicYears");
             layer.open({
                 type: 1,
                 title: "添加学年",
@@ -91,11 +254,16 @@
                 content: '<div class="layui-form-item" style="margin-top: 25px;">\n' +
                     '  <label class="layui-form-label">学年:</label>\n' +
                     '  <div class="layui-input-block">\n' +
-                    '    <input type="text" name="name" id="name" lay-verify="required" placeholder="设置学年" autocomplete="off" class="layui-input account_input">\n' +
+                    '    <input type="text" name="name" id="name" lay-verify="required" placeholder="例如：2025下半学年" autocomplete="off" class="layui-input account_input">\n' +
+                    '    <div style="margin-top:8px;color:#777;line-height:22px;">新增学年默认未启用。需要在列表中设为当前后，新增课程才会归属该学年。</div>\n' +
                     '  </div>\n' +
                     '</div>',
                 yes: function(){
-                    var name = document.getElementById("name").value;
+                    var name = $.trim(document.getElementById("name").value);
+                    if(!name){
+                        layer.msg('请输入学年名称');
+                        return;
+                    }
                     addCourseAcademicYears(name);
                 },
                 btn2: function(){
@@ -116,14 +284,19 @@
                 traditional: true,
                 dataType: 'text',
                 success: function (res) {
-                    res = JSON.parse(res)
+                    res = JSON.parse(res);
                     if(res.code == '201'){
-                        layer.msg(res.data)
+                        layer.msg(res.data || '添加学年数据失败');
                     }else{
-                        var message = res.data;
-                        layer.closeAll()
-                        layer.msg(res.data)
+                        layer.closeAll();
+                        layer.msg(res.data || '添加学年数据成功');
+                        setTimeout(function(){
+                            window.location.reload();
+                        }, 600);
                     }
+                },
+                error: function () {
+                    layer.msg('服务器连接失败');
                 }
             });
         }
