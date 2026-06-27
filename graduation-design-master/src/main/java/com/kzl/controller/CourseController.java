@@ -46,7 +46,7 @@ public class CourseController {
     @RequestMapping("courseList")
     public Result courseList(HttpServletRequest request){
         Course course = new Course();
-        course.setCourseName(cleanTextParam(request.getParameter("courseName")));
+        course.setCourseName(buildLikeParam(request.getParameter("courseName")));
         course.setCollegeId(cleanSelectParam(request.getParameter("collegeId")));
         List<Course> courses = courseService.queryCourseList(course);
         return Result.create(0,"",courses);
@@ -167,6 +167,11 @@ public class CourseController {
             return null;
         }
         return text;
+    }
+
+    private static String buildLikeParam(String value){
+        String text = cleanTextParam(value);
+        return text == null ? null : "%" + text + "%";
     }
 
 }

@@ -31,7 +31,7 @@
                     <div class="dropdown search_college">
                         <span class="name_title">选择学院:</span>
                         <select class="dropbtn" id="tag" name="tag">
-                            <option value="">全部学院</option>
+                            <option value="" selected="selected">全部学院</option>
                             <option th:each="college : ${collegeList}" th:value="${college.id}" th:text="${college.name}" />
                         </select>
                     </div>
@@ -61,6 +61,8 @@
         var layer = layui.layer,
             table = layui.table,
             $ = layui.jquery;
+
+        $('#tag').val('');
 
         var tableIns = table.render({
             elem: '#course',
@@ -133,7 +135,7 @@
         var active = {
             reload: function(){
                 var courseName = $.trim($('#courseName').val());
-                var collegeId = $('select[name="tag"] option:selected').val();
+                var collegeId = $('#tag').val() || '';
                 //执行重载
                 table.reload('courseReload', {
                     where: {
