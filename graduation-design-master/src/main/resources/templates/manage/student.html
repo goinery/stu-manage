@@ -119,14 +119,14 @@
 
         var active = {
             reload: function(){
-                var username = $('#username');
-                var studentNumber = $('#studentNumber');
+                var username = $.trim($('#username').val());
+                var studentNumber = $.trim($('#studentNumber').val());
                 var collegeId = $('select[name="tag"] option:selected').val();
                 //执行重载
                 table.reload('studentReload', {
                     where: {
-                        'username': username.val(),
-                        'studentNumber': studentNumber.val(),
+                        'username': username,
+                        'studentNumber': studentNumber,
                         'collegeId':collegeId
                     }
                 }, 'data');
