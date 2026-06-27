@@ -24,7 +24,7 @@
                     <div class="dropdown search_college2">
                         <span class="name_title">选择学年:</span>
                         <select class="dropbtn" id="academicYearSelect" name="academicYear">
-                            <option value="">全部学年</option>
+                            <option value="" th:selected="${currentAcademicYear == null || currentAcademicYear == ''}">全部学年</option>
                             <option th:each="year : ${courseAcademicYears}"
                                     th:value="${year.academicYear}"
                                     th:text="${year.academicYear}"
@@ -89,13 +89,13 @@
         // 学年切换时重新加载
         $('#academicYearSelect').on('change', function(){
             var year = $(this).val();
-            window.location.href = '/teacher/selectedCourseStu?academicYear=' + year;
+            window.location.href = '/teacher/selectedCourseStu?academicYear=' + encodeURIComponent(year);
         });
 
         // 搜索功能
         var active = {
             reload: function(){
-                var username = $('#username').val();
+                var username = $.trim($('#username').val());
                 var courseName = $('#courseSelect').val();
                 var academicYear = $('#academicYearSelect').val();
                 table.reload('teacherReload', {

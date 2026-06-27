@@ -100,7 +100,7 @@ public class TeacherServiceImpl implements TeacherService {
         List<CourseAcademicYear> courseAcademicYears = teacherMapper.selectCourseAcademicYearList();
         for(CourseAcademicYear courseAcademicYear : courseAcademicYears){
             courseAcademicYear.setType("0");
-            if(courseAcademicYearId.equals(courseAcademicYear.getId())){
+            if(courseAcademicYearId != null && courseAcademicYearId.equals(courseAcademicYear.getId())){
                 courseAcademicYear.setType("1");
             }
         }

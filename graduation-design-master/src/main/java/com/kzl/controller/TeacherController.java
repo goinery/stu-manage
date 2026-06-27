@@ -88,18 +88,13 @@ public class TeacherController {
         }
         Teacher user = (Teacher) request.getSession().getAttribute("user");
         CourseAcademicYear courseAcademicYear = studentService.getCourseAcademicYear();
-        // 支持URL参数切换学年
-        String yearParam = request.getParameter("academicYear");
-        String selectedYear = courseAcademicYear.getAcademicYear();
-        if(yearParam != null && !yearParam.isEmpty()){
-            selectedYear = yearParam;
-        }
+        String selectedYear = cleanTextParam(request.getParameter("academicYear"));
         List<CourseAcademicYear> courseAcademicYears = teacherService.selectCourseYearList(courseAcademicYear.getId());
         List<Course> courses = teacherService.selectCourseList(user.getId(), selectedYear);
         modelAndView.setViewName("teacher/scoreInfo");
         modelAndView.addObject("courseAcademicYears", courseAcademicYears);
         modelAndView.addObject("courses", courses);
-        modelAndView.addObject("currentAcademicYear", selectedYear);
+        modelAndView.addObject("currentAcademicYear", selectedYear == null ? "" : selectedYear);
         return modelAndView;
     }
 
@@ -111,16 +106,9 @@ public class TeacherController {
             return Result.createFail("请先登录");
         }
         Teacher user = (Teacher) request.getSession().getAttribute("user");
-        String academicYearParam = request.getParameter("academicYear");
-        String studentName = request.getParameter("username");
-        String courseName = request.getParameter("courseName");
-        String academicYear;
-        if(academicYearParam != null && !academicYearParam.isEmpty()){
-            academicYear = academicYearParam;
-        } else {
-            CourseAcademicYear courseAcademicYear = studentService.getCourseAcademicYear();
-            academicYear = courseAcademicYear.getAcademicYear();
-        }
+        String academicYear = cleanTextParam(request.getParameter("academicYear"));
+        String studentName = cleanTextParam(request.getParameter("username"));
+        String courseName = cleanTextParam(request.getParameter("courseName"));
         List<StudentCourseRel> courses = teacherService.queryStudentList(academicYear, user.getId(), studentName, courseName);
         return Result.create(0,"",courses);
     }
@@ -161,17 +149,13 @@ public class TeacherController {
         }
         Teacher user = (Teacher) request.getSession().getAttribute("user");
         CourseAcademicYear courseAcademicYear = studentService.getCourseAcademicYear();
-        String yearParam = request.getParameter("academicYear");
-        String selectedYear = courseAcademicYear.getAcademicYear();
-        if(yearParam != null && !yearParam.isEmpty()){
-            selectedYear = yearParam;
-        }
+        String selectedYear = cleanTextParam(request.getParameter("academicYear"));
         List<CourseAcademicYear> courseAcademicYears = teacherService.selectCourseYearList(courseAcademicYear.getId());
         List<Course> courses = teacherService.selectCourseList(user.getId(), selectedYear);
         modelAndView.setViewName("teacher/selectedCourseStu");
         modelAndView.addObject("courseAcademicYears", courseAcademicYears);
         modelAndView.addObject("courses", courses);
-        modelAndView.addObject("currentAcademicYear", selectedYear);
+        modelAndView.addObject("currentAcademicYear", selectedYear == null ? "" : selectedYear);
         return modelAndView;
     }
 
@@ -183,16 +167,9 @@ public class TeacherController {
             return Result.createFail("请先登录");
         }
         Teacher user = (Teacher) request.getSession().getAttribute("user");
-        String academicYearParam = request.getParameter("academicYear");
-        String studentName = request.getParameter("username");
-        String courseName = request.getParameter("courseName");
-        String academicYear;
-        if(academicYearParam != null && !academicYearParam.isEmpty()){
-            academicYear = academicYearParam;
-        } else {
-            CourseAcademicYear courseAcademicYear = studentService.getCourseAcademicYear();
-            academicYear = courseAcademicYear.getAcademicYear();
-        }
+        String academicYear = cleanTextParam(request.getParameter("academicYear"));
+        String studentName = cleanTextParam(request.getParameter("username"));
+        String courseName = cleanTextParam(request.getParameter("courseName"));
         List<StudentCourseRel> studentCourses = teacherService.getStudentInCourse(academicYear, user.getId(), studentName, courseName);
         return Result.create(0,"",studentCourses);
     }
@@ -240,5 +217,13 @@ public class TeacherController {
             return null;
         }
         return informationList.get(0);
+    }
+
+    private static String cleanTextParam(String value){
+        if(value == null){
+            return null;
+        }
+        String text = value.trim();
+        return text.isEmpty() ? null : text;
     }
 }

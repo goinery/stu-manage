@@ -9,7 +9,7 @@
         LEFT JOIN college c ON s.collegeId = c.id
         LEFT JOIN teacher t ON t.id=s.teacherId
         WHERE s.teacherId=#{teacherId}
-        AND s.academicYear = #{academicYear}
+        <if test="academicYear!=null and academicYear!=''">AND s.academicYear = #{academicYear}</if>
     </select>
 
     <select id="selectStudentListByCourse" resultType="com.kzl.entity.StudentCourseRel">
@@ -21,9 +21,9 @@
         LEFT JOIN course c ON c.id=sc.courseId
         LEFT JOIN student s ON s.id = sc.studentId
         WHERE c.teacherId=#{teacherId}
-        AND c.academicYear = #{academicYear}
+        <if test="academicYear!=null and academicYear!=''">AND c.academicYear = #{academicYear}</if>
         <if test="studentName!=null and studentName!=''">AND s.username LIKE '%' || #{studentName} || '%'</if>
-        <if test="courseName!=null and courseName!=''">AND c.courseName = #{courseName}</if>
+        <if test="courseName!=null and courseName!=''">AND c.courseName LIKE '%' || #{courseName} || '%'</if>
         ORDER BY c.courseName, s.studentNumber
     </select>
 
