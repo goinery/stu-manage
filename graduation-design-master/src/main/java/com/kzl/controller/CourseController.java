@@ -46,11 +46,8 @@ public class CourseController {
     @RequestMapping("courseList")
     public Result courseList(HttpServletRequest request){
         Course course = new Course();
-        course.setCourseName(request.getParameter("courseName"));
-        String collegeId = request.getParameter("collegeId");
-        if(!"0".equals(collegeId)){
-            course.setCollegeId(collegeId);
-        }
+        course.setCourseName(cleanTextParam(request.getParameter("courseName")));
+        course.setCollegeId(cleanSelectParam(request.getParameter("collegeId")));
         List<Course> courses = courseService.queryCourseList(course);
         return Result.create(0,"",courses);
     }
@@ -154,6 +151,22 @@ public class CourseController {
             }
         }
         return null;
+    }
+
+    private static String cleanTextParam(String value){
+        if(value == null){
+            return null;
+        }
+        String text = value.trim();
+        return text.isEmpty() ? null : text;
+    }
+
+    private static String cleanSelectParam(String value){
+        String text = cleanTextParam(value);
+        if(text == null || "0".equals(text)){
+            return null;
+        }
+        return text;
     }
 
 }
