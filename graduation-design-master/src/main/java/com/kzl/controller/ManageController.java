@@ -248,7 +248,7 @@ public class ManageController {
     @RequestMapping("teacherList")
     public Result teacherList(HttpServletRequest request){
         Teacher teacher = new Teacher();
-        teacher.setUsername(cleanTextParam(request.getParameter("username")));
+        teacher.setUsername(buildLikeParam(request.getParameter("username")));
         teacher.setCollegeId(cleanSelectParam(request.getParameter("collegeId")));
         List<Teacher> teachers = manageService.queryTeacherList(teacher);
         return Result.create(0,"",teachers);
@@ -281,8 +281,8 @@ public class ManageController {
     @RequestMapping("studentList")
     public Result studentList(HttpServletRequest request){
         Student student = new Student();
-        student.setUsername(cleanTextParam(request.getParameter("username")));
-        student.setStudentNumber(cleanTextParam(request.getParameter("studentNumber")));
+        student.setUsername(buildLikeParam(request.getParameter("username")));
+        student.setStudentNumber(buildLikeParam(request.getParameter("studentNumber")));
         student.setCollegeId(cleanSelectParam(request.getParameter("collegeId")));
         List<Student> teachers = manageService.queryStudentList(student);
         return Result.create(0,"",teachers);
@@ -408,6 +408,11 @@ public class ManageController {
             return null;
         }
         return text;
+    }
+
+    private static String buildLikeParam(String value){
+        String text = cleanTextParam(value);
+        return text == null ? null : "%" + text + "%";
     }
 
 }

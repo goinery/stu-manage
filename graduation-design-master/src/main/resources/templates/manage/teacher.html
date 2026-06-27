@@ -23,8 +23,11 @@
                     <div class="dropdown search_college">
                         <span class="name_title">选择学院:</span>
                         <select class="dropbtn" id="tag" name="tag">
-                            <option value="">全部学院</option>
-                            <option th:each="college : ${collegeList}" th:value="${college.id}" th:text="${college.name}" />
+                            <option value="" selected="selected">全部学院</option>
+                            <option th:each="college : ${collegeList}"
+                                    th:value="${college.id}"
+                                    th:text="${college.name}">
+                            </option>
                         </select>
                     </div>
 
@@ -48,13 +51,14 @@
         </div>
     </div>
 </div>
-<script src="../../static/layui/layui.all.js"/>
-<script></script>
-<script>
+<script src="../../static/layui/layui.all.js"></script>
+<script th:inline="none">
     layui.use(['table', 'layer'], function(){
         var layer = layui.layer,
             table = layui.table,
             $ = layui.jquery;
+
+        $('#tag').val('');
 
         var tableIns = table.render({
             elem: '#teacher',
@@ -115,17 +119,15 @@
         var active = {
             reload: function(){
                 var username = $.trim($('#username').val());
-                var collegeId = $('select[name="tag"] option:selected').val();
+                var collegeId = $('#tag').val() || '';
                 //执行重载
                 table.reload('teacherReload', {
                     where: {
-                        'username': username,
-                        'collegeId':collegeId
-                        // key: {
-                        //
-                        // }
-                    }
-                }, 'data');
+                        username: username,
+                        collegeId: collegeId
+                    },
+                    page: {curr: 1}
+                });
             }
         };
 
