@@ -40,8 +40,8 @@
     </select>
 
     <select id="selectCompleteCourseCount" parameterType="com.kzl.entity.Student" resultType="java.util.HashMap">
-        SELECT count(1) AS "courseNum",
-        (CASE WHEN sum(c.credits)IS NULL THEN 0 ELSE sum(c.credits) END) AS "creditsNum"
+        SELECT count(1) AS `courseNum`,
+        (CASE WHEN sum(c.credits) IS NULL THEN 0 ELSE sum(c.credits) END) AS `creditsNum`
         FROM student_course_rel sr
         LEFT JOIN course c ON sr.courseId=c.id
         WHERE sr.state='1'
@@ -49,8 +49,8 @@
     </select>
 
     <select id="selectUnfinishedCourseCount" parameterType="com.kzl.entity.Student" resultType="java.util.HashMap">
-        SELECT count(1) AS "courseNum",
-        (CASE WHEN sum(c.credits)IS NULL THEN 0 ELSE sum(c.credits) END) AS "creditsNum"
+        SELECT count(1) AS `courseNum`,
+        (CASE WHEN sum(c.credits) IS NULL THEN 0 ELSE sum(c.credits) END) AS `creditsNum`
         FROM student_course_rel sr
         LEFT JOIN course c ON sr.courseId=c.id
         WHERE sr.studentId=#{id}
@@ -58,8 +58,8 @@
     </select>
 
     <select id="selectSelectedCourseCount" parameterType="com.kzl.entity.Student" resultType="java.util.HashMap">
-        SELECT count(1) AS "courseNum",
-        (CASE WHEN sum(c.credits)IS NULL THEN 0 ELSE sum(c.credits) END) AS "creditsNum"
+        SELECT count(1) AS `courseNum`,
+        (CASE WHEN sum(c.credits) IS NULL THEN 0 ELSE sum(c.credits) END) AS `creditsNum`
         FROM student_course_rel sr
         LEFT JOIN course c ON sr.courseId=c.id
         WHERE sr.studentId=#{id}
@@ -191,8 +191,8 @@
             academicYear varchar(20) NOT NULL,
             stageName varchar(64) NOT NULL,
             stageOrder INTEGER NOT NULL,
-            startDate TIMESTAMP NOT NULL,
-            endDate TIMESTAMP NOT NULL,
+            startDate DATETIME NOT NULL,
+            endDate DATETIME NOT NULL,
             allowRecommend varchar(1) DEFAULT '1',
             allowPlan varchar(1) DEFAULT '0',
             allowOutside varchar(1) DEFAULT '0',
@@ -214,9 +214,9 @@
                 WHEN sc.selectionType = 'plan' THEN '方案内选课'
                 WHEN sc.selectionType = 'outside' THEN '方案外选课'
                 ELSE '未分类'
-            END as "typeName",
-            COUNT(1) as "courseNum",
-            CASE WHEN SUM(c.credits) IS NULL THEN 0 ELSE SUM(c.credits) END as "creditsNum"
+            END as `typeName`,
+            COUNT(1) as `courseNum`,
+            CASE WHEN SUM(c.credits) IS NULL THEN 0 ELSE SUM(c.credits) END as `creditsNum`
         FROM student_course_rel sc
         LEFT JOIN course c ON sc.courseId = c.id
         WHERE sc.studentId = #{studentId}
@@ -226,9 +226,9 @@
     <!-- 按专业统计选课 -->
     <select id="selectCourseCountByCollege" resultType="java.util.HashMap">
         SELECT
-            co.name as "collegeName",
-            COUNT(1) as "courseNum",
-            CASE WHEN SUM(c.credits) IS NULL THEN 0 ELSE SUM(c.credits) END as "creditsNum"
+            co.name as `collegeName`,
+            COUNT(1) as `courseNum`,
+            CASE WHEN SUM(c.credits) IS NULL THEN 0 ELSE SUM(c.credits) END as `creditsNum`
         FROM student_course_rel sc
         LEFT JOIN course c ON sc.courseId = c.id
         LEFT JOIN college co ON c.collegeId = co.id
@@ -239,10 +239,10 @@
     <!-- 时间冲突检测统计 -->
     <select id="selectTimeConflictStats" resultType="java.util.HashMap">
         SELECT
-            c1.courseName as "courseName1",
-            c2.courseName as "courseName2",
-            c1.classDate as "classDate1",
-            c2.classDate as "classDate2"
+            c1.courseName as `courseName1`,
+            c2.courseName as `courseName2`,
+            c1.classDate as `classDate1`,
+            c2.classDate as `classDate2`
         FROM student_course_rel sc1
         LEFT JOIN student_course_rel sc2 ON sc1.studentId = sc2.studentId AND sc1.courseId != sc2.courseId
         LEFT JOIN course c1 ON sc1.courseId = c1.id
@@ -256,13 +256,13 @@
     <!-- 选课总体统计 -->
     <select id="selectSelectionOverview" resultType="java.util.HashMap">
         SELECT
-            COUNT(1) as "totalCourses",
-            CASE WHEN SUM(c.credits) IS NULL THEN 0 ELSE SUM(c.credits) END as "totalCredits",
-            SUM(CASE WHEN sc.state = '1' THEN 1 ELSE 0 END) as "completedCourses",
-            SUM(CASE WHEN sc.state = '0' THEN 1 ELSE 0 END) as "ongoingCourses",
-            SUM(CASE WHEN sc.selectionType = 'recommend' OR sc.selectionType IS NULL THEN 1 ELSE 0 END) as "recommendCount",
-            SUM(CASE WHEN sc.selectionType = 'plan' THEN 1 ELSE 0 END) as "planCount",
-            SUM(CASE WHEN sc.selectionType = 'outside' THEN 1 ELSE 0 END) as "outsideCount"
+            COUNT(1) as `totalCourses`,
+            CASE WHEN SUM(c.credits) IS NULL THEN 0 ELSE SUM(c.credits) END as `totalCredits`,
+            SUM(CASE WHEN sc.state = '1' THEN 1 ELSE 0 END) as `completedCourses`,
+            SUM(CASE WHEN sc.state = '0' THEN 1 ELSE 0 END) as `ongoingCourses`,
+            SUM(CASE WHEN sc.selectionType = 'recommend' OR sc.selectionType IS NULL THEN 1 ELSE 0 END) as `recommendCount`,
+            SUM(CASE WHEN sc.selectionType = 'plan' THEN 1 ELSE 0 END) as `planCount`,
+            SUM(CASE WHEN sc.selectionType = 'outside' THEN 1 ELSE 0 END) as `outsideCount`
         FROM student_course_rel sc
         LEFT JOIN course c ON sc.courseId = c.id
         WHERE sc.studentId = #{studentId}

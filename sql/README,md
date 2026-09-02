@@ -1,12 +1,14 @@
-graduation-design-master\sql
-此目录用于帮助我在数据库一次性初始化数据，需要考虑数据残留问题，在修改前删除表再添加数据
+此目录包含 MySQL 初始化脚本。脚本会创建（或复用）`graduation_design` 数据库，
+删除旧表后重新建表并写入演示数据。
 
-su - omm
-gs_om -t status --detail
-gs_om -t start;
-gsql -d postgres -p 26000 -r
-gsql -d oasys -p 26000 -r
-java -jar graduation-design-master/target/springboot-student.jar
+```powershell
+Get-Content -Raw -Encoding UTF8 sql/init.sql |
+  docker exec -i goi_mysql mysql -uroot -p123456 --default-character-set=utf8mb4
+```
 
-查看所有表
-\dt;
+应用启动命令：
+
+```powershell
+cd graduation-design-master
+mvn spring-boot:run
+```

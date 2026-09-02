@@ -22,20 +22,19 @@
         LEFT JOIN student s ON s.id = sc.studentId
         WHERE c.teacherId=#{teacherId}
         <if test="academicYear!=null and academicYear!=''">AND c.academicYear = #{academicYear}</if>
-        <if test="studentName!=null and studentName!=''">AND s.username LIKE '%' || #{studentName} || '%'</if>
-        <if test="courseName!=null and courseName!=''">AND c.courseName LIKE '%' || #{courseName} || '%'</if>
+        <if test="studentName!=null and studentName!=''">AND s.username LIKE CONCAT('%', #{studentName}, '%')</if>
+        <if test="courseName!=null and courseName!=''">AND c.courseName LIKE CONCAT('%', #{courseName}, '%')</if>
         ORDER BY c.courseName, s.studentNumber
     </select>
 
     <update id="updateStudentCourseRel">
         UPDATE student_course_rel sc
-        SET state=#{record.state},
-            isQualified=#{record.isQualified},
-            teacherId=#{teacherId},
-            creditsRemark=#{record.creditsRemark}
-        FROM course c
-        WHERE sc.courseId = c.id
-        AND sc.id=#{record.id}
+        INNER JOIN course c ON sc.courseId = c.id
+        SET sc.state=#{record.state},
+            sc.isQualified=#{record.isQualified},
+            sc.teacherId=#{teacherId},
+            sc.creditsRemark=#{record.creditsRemark}
+        WHERE sc.id=#{record.id}
         AND c.teacherId=#{teacherId}
         AND c.teachEndDate &lt;= CURRENT_TIMESTAMP
         AND sc.state='0'
@@ -43,13 +42,12 @@
 
     <update id="cancelStudentCourseScore">
         UPDATE student_course_rel sc
-        SET state='0',
-            isQualified='0',
-            teacherId=#{teacherId},
-            creditsRemark=' '
-        FROM course c
-        WHERE sc.courseId = c.id
-        AND sc.id=#{id}
+        INNER JOIN course c ON sc.courseId = c.id
+        SET sc.state='0',
+            sc.isQualified='0',
+            sc.teacherId=#{teacherId},
+            sc.creditsRemark=' '
+        WHERE sc.id=#{id}
         AND c.teacherId=#{teacherId}
         AND sc.state='1'
     </update>
@@ -60,7 +58,7 @@
     </select>
 
     <select id="selectTeacherStatisList"  resultType="com.kzl.entity.TeacherStatis">
-        SELECT count(s.studentNumber) as "count", cu.name name
+        SELECT count(s.studentNumber) AS count, cu.name name
         FROM student_course_rel sc
                  LEFT JOIN course c ON c.id=sc.courseId
                  LEFT JOIN student s ON s.id = sc.studentId
@@ -69,19 +67,19 @@
  </select>
 
     <select id="selectTeacherCollegeOverview" resultType="java.util.HashMap">
-        SELECT co.name AS "collegeName",
-               COUNT(DISTINCT s.id) AS "totalStudents",
-               COUNT(DISTINCT CASE WHEN c.id IS NOT NULL THEN s.id ELSE NULL END) AS "selectedStudents",
-               COUNT(DISTINCT s.id) - COUNT(DISTINCT CASE WHEN c.id IS NOT NULL THEN s.id ELSE NULL END) AS "unselectedStudents",
+        SELECT co.name AS `collegeName`,
+               COUNT(DISTINCT s.id) AS `totalStudents`,
+               COUNT(DISTINCT CASE WHEN c.id IS NOT NULL THEN s.id ELSE NULL END) AS `selectedStudents`,
+               COUNT(DISTINCT s.id) - COUNT(DISTINCT CASE WHEN c.id IS NOT NULL THEN s.id ELSE NULL END) AS `unselectedStudents`,
                (
                    SELECT COUNT(1)
                    FROM course c2
                    WHERE c2.collegeId = #{collegeId}
                    AND c2.academicYear = #{academicYear}
                    AND c2.state = '1'
-               ) AS "collegeCourseCount",
-               COUNT(c.id) AS "selectionCount",
-               COALESCE(ROUND(CAST(COUNT(c.id) AS NUMERIC) / NULLIF(COUNT(DISTINCT s.id), 0), 2), 0) AS "avgCoursePerStudent"
+               ) AS `collegeCourseCount`,
+               COUNT(c.id) AS `selectionCount`,
+               COALESCE(ROUND(CAST(COUNT(c.id) AS DECIMAL(20, 4)) / NULLIF(COUNT(DISTINCT s.id), 0), 2), 0) AS `avgCoursePerStudent`
         FROM college co
         LEFT JOIN student s ON s.collegeId = co.id AND s.state = '1'
         LEFT JOIN student_course_rel sc ON sc.studentId = s.id
@@ -93,9 +91,9 @@
     </select>
 
     <select id="selectTeacherCourseSelectionStats" resultType="java.util.HashMap">
-        SELECT c.courseName AS "courseName",
-               c.optional AS "optional",
-               COUNT(sc.id) AS "selectedCount"
+        SELECT c.courseName AS `courseName`,
+               c.optional AS `optional`,
+               COUNT(sc.id) AS `selectedCount`
         FROM course c
         LEFT JOIN student_course_rel sc ON sc.courseId = c.id
         WHERE c.teacherId = #{teacherId}
@@ -106,9 +104,9 @@
     </select>
 
     <select id="selectCollegeCourseSelectionStats" resultType="java.util.HashMap">
-        SELECT c.courseName AS "courseName",
-               c.optional AS "optional",
-               COUNT(sc.id) AS "selectedCount"
+        SELECT c.courseName AS `courseName`,
+               c.optional AS `optional`,
+               COUNT(sc.id) AS `selectedCount`
         FROM course c
         LEFT JOIN student_course_rel sc ON sc.courseId = c.id
         WHERE c.collegeId = #{collegeId}

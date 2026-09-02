@@ -1,13 +1,20 @@
-su - omm
+## 本地运行
 
-查询openGauss数据库服务是否启动
-gs_om -t status --detail
+项目当前适配 MySQL 8。可使用文档中提供的 Docker 容器启动数据库：
 
-启动数据库服务（如数据库未启动，可执行此步进行启动）
-gs_om -t start;
+```powershell
+docker run --name goi_mysql -e MYSQL_ROOT_PASSWORD=123456 -p 3306:3306 -d mysql
+Get-Content -Raw -Encoding UTF8 sql/init.sql | docker exec -i goi_mysql mysql -uroot -p123456 --default-character-set=utf8mb4
+```
 
-登录openGauss数据库服务
-gsql -d postgres -p 26000 -r
+初始化数据后，从嵌套的 Maven 项目目录启动应用：
+
+```powershell
+cd graduation-design-master
+mvn spring-boot:run
+```
+
+应用地址为 <http://localhost:8088/>，数据库连接配置位于 `src/main/resources/application.properties`。
 
 # stu-manage
 
